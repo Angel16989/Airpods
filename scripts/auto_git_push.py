@@ -132,6 +132,12 @@ def main():
         print("  git remote add origin <your-github-repo-url>")
         sys.exit(1)
 
+    # Project rule: main is protected. Never auto-commit or auto-push to it.
+    if current_branch() == "main":
+        print("Refusing to run on 'main' (protected branch).")
+        print("Switch to the working branch first:  git checkout dev")
+        sys.exit(1)
+
     if args.once:
         if not commit_and_push(push=not args.no_push):
             print("Nothing to commit.")

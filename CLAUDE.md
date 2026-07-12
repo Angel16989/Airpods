@@ -22,6 +22,7 @@ Read this file first. It tells you how to work in this project, regardless of wh
 
 ## Hard Rules
 
+- NEVER commit or push to `main`. All work happens on `dev` (or a feature branch off `dev`). `main` only changes when the user merges it themselves.
 - Keep changes scoped to your assigned task. Do not touch unrelated files.
 - Do not overwrite another agent's in-progress work — check the workspace board first.
 - Match existing code patterns; do not introduce new libraries or abstractions without a decision-log entry.

@@ -6,6 +6,9 @@
 - Current objective: Complete the v0.1 pipeline: define product → plan → build → verify → ship (TASK-002 to TASK-021).
 - Current release: pre-0.1
 - Repo path: `/home/rasik/Desktop/APPLE ICON`
+- Repo URL: https://github.com/Angel16989/Airpods
+- Main branch: `main` — protected, never commit or push to it
+- Working branch: `dev` — all agent work happens here
 
 ## Active Agents
 
