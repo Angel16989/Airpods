@@ -16,7 +16,7 @@
 
 | Agent | Role | Current Task | Status | Last Update | Blockers |
 | --- | --- | --- | --- | --- | --- |
-| Docs Agent | Specs, task packets, handoffs | None | Ready | 2026-07-12 | None |
+| Docs Agent | Specs, task packets, handoffs | TASK-005 (Complete) | Ready | 2026-07-12 | None |
 | Frontend Agent | UI implementation | None | Ready | 2026-07-12 | None |
 | Backend Agent | API and data | TASK-003 (Complete) | Ready | 2026-07-12 | None |
 | QA Agent | Testing and verification | None | Ready | 2026-07-12 | None |
@@ -31,7 +31,7 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 | TASK-002 | Define product + fill shared context | Docs Agent | High | Complete | User input |
 | TASK-003 | Choose tech stack | Backend Agent | High | Complete | TASK-002 |
 | TASK-004 | Spec core feature | Docs Agent | High | Complete | TASK-002 |
-| TASK-005 | Spec second feature | Docs Agent | Medium | Ready | TASK-004 |
+| TASK-005 | Spec second feature | Docs Agent | Medium | Complete | TASK-004 |
 | TASK-006 | Data + API conventions | Backend Agent | High | Ready | TASK-003, TASK-004 |
 | TASK-007 | Git init + app scaffold | Backend Agent | High | Ready | TASK-003 |
 | TASK-008 | Test + lint toolchain | Backend Agent | High | Backlog | TASK-007 |
@@ -72,7 +72,7 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 
 ### 2026-07-12
 
-- Completed: TASK-001 starter workspace setup; full 21-task v0.1 pipeline planned with packets (TASK-002 to TASK-021) plus TASK-022 tooling; `scripts/auto_git_push.py` created. TASK-002 product definition completed and written into `shared-context.md`. TASK-003 tech stack chosen and approved by user (Kotlin + Jetpack Compose Android app, on-device only, DataStore, JUnit/Compose UI Testing/Espresso, Gradle -> Play Store); logged in `decision-log.md` and reflected in `shared-context.md` Tech Stack/Commands. TASK-004 core feature spec completed as `project-docs/features/airpods-detection-popup.md`.
+- Completed: TASK-001 starter workspace setup; full 21-task v0.1 pipeline planned with packets (TASK-002 to TASK-021) plus TASK-022 tooling; `scripts/auto_git_push.py` created. TASK-002 product definition completed and written into `shared-context.md`. TASK-003 tech stack chosen and approved by user (Kotlin + Jetpack Compose Android app, on-device only, DataStore, JUnit/Compose UI Testing/Espresso, Gradle -> Play Store); logged in `decision-log.md` and reflected in `shared-context.md` Tech Stack/Commands. TASK-004 core feature spec completed as `project-docs/features/airpods-detection-popup.md`. TASK-005 second feature spec completed as `project-docs/features/persistent-status-notification.md` (user chose a persistent battery-status notification over low-battery alerts or a home-screen widget); reuses the core feature's snapshot model and monitor stream.
 - In progress: None.
 - Blocked: None.
-- Next: TASK-005, TASK-006, and TASK-007 are ready to start.
+- Next: TASK-006 and TASK-007 are ready to start. TASK-015 remains blocked on TASK-011 (core feature API) even though its TASK-005 dependency is now clear.

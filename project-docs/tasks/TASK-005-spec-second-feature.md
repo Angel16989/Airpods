@@ -10,7 +10,7 @@ Agent name: Docs Agent
 
 ## Feature
 
-Feature name: Second Feature (name it properly in this task)
+Feature name: Persistent Status Notification
 
 ## Objective
 
@@ -49,9 +49,9 @@ With the core feature specced (TASK-004), this covers the next most valuable flo
 
 ## Acceptance Criteria
 
-- [ ] Feature spec exists with no empty sections (or task marked Skipped with user confirmation).
-- [ ] Feature directory updated.
-- [ ] No conflicts with the core feature's data model.
+- [x] Feature spec exists with no empty sections (or task marked Skipped with user confirmation).
+- [x] Feature directory updated.
+- [x] No conflicts with the core feature's data model.
 
 ## Suggested Checks
 
@@ -70,7 +70,9 @@ grep -rn "TBD" project-docs/features/
 
 ## Agent Notes
 
-- Assumptions:
+- Assumptions: TASK-004's core feature spec (`project-docs/features/airpods-detection-popup.md`) was found completed but uncommitted in the working tree at task start; it was committed and merged to `develop` first so this task's "for consistency" dependency was real, not assumed. User was offered low-battery alerts, a persistent status notification, or a home-screen widget, plus the option to skip a second feature; user chose the persistent status notification.
 - Questions:
-- Progress:
-- Final status:
+  - Non-blocking: should the notification be swipe-dismissible while the setting stays on, or non-dismissible while connected? (left as an Open Question in the spec)
+  - Non-blocking: should this later merge with a future low-battery alert feature into one notification?
+- Progress: Read `airpods-detection-popup.md` for consistency; reused its snapshot fields (`device_id`, battery/charging fields, `connection_state`, `is_stale`) rather than redefining them, and reused its `AirPodsMonitor.observeSnapshots()` stream instead of a second monitoring path. Created `project-docs/features/persistent-status-notification.md` and registered it in the feature directory.
+- Final status: Complete.
