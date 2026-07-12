@@ -175,9 +175,9 @@
   <footer>
     Every number on this page is fetched live from
     <a href="https://github.com/Angel16989/Airpods" target="_blank" rel="noopener">github.com/Angel16989/Airpods</a>
-    (commits via the GitHub API, task board parsed from
+    via the GitHub API (task board parsed from
     <span class="mono">project-docs/agent-workspace.md</span> on <span class="mono">develop</span>) — nothing is mocked.
-    Board content can lag up to ~5 minutes behind a push (GitHub raw CDN cache).
+    Data is only as current as what has been committed and pushed.
   </footer>
 </div>
 
@@ -263,19 +263,35 @@ async function apiGet(path) {
 }
 
 async function fetchBoard() {
-  const url = "https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/" +
-    BOARD_BRANCH + "/project-docs/agent-workspace.md?t=" + Date.now();
-  const res = await fetch(url, { cache: "no-store" });
+  // Contents API, not raw.githubusercontent: the raw CDN caches for ~5 min
+  // and ignores cache-busting, but the API always serves the latest commit.
+  const res = await fetch("https://api.github.com/repos/" + OWNER + "/" + REPO +
+    "/contents/project-docs/agent-workspace.md?ref=" + BOARD_BRANCH, {
+    headers: { Accept: "application/vnd.github.raw+json" },
+    cache: "no-store",
+  });
+  const rem = res.headers.get("x-ratelimit-remaining");
+  if (rem !== null) rateRemaining = rem;
   if (!res.ok) throw new Error("Board fetch failed (" + res.status + ")");
   return res.text();
 }
 
+// Secondary branches change rarely — fetched once per page load, then reused,
+// to stay well inside the unauthenticated API budget.
+const secondaryCache = new Map();
+
 async function fetchCommits() {
   const bySha = new Map();
-  for (const branch of FEED_BRANCHES) {
+  for (const [i, branch] of FEED_BRANCHES.entries()) {
     try {
-      const commits = await apiGet("/repos/" + OWNER + "/" + REPO +
-        "/commits?sha=" + branch + "&per_page=20");
+      let commits;
+      if (i > 0 && secondaryCache.has(branch)) {
+        commits = secondaryCache.get(branch);
+      } else {
+        commits = await apiGet("/repos/" + OWNER + "/" + REPO +
+          "/commits?sha=" + branch + "&per_page=20");
+        if (i > 0) secondaryCache.set(branch, commits);
+      }
       for (const c of commits) {
         if (bySha.has(c.sha)) bySha.get(c.sha).branches.push(branch);
         else bySha.set(c.sha, { c, branches: [branch] });
