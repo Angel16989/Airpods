@@ -93,22 +93,43 @@ def commit_and_push(push=True):
     return True
 
 
+def git_operation_in_progress():
+    """True while a merge/rebase/another git process is mid-flight."""
+    git_dir = REPO_ROOT / ".git"
+    return any((git_dir / f).exists()
+               for f in ("MERGE_HEAD", "REBASE_HEAD", "CHERRY_PICK_HEAD", "index.lock"))
+
+
 def watch(interval, push=True):
     print(f"Watching {REPO_ROOT} every {interval}s. Ctrl+C to stop.")
     previous = None
     while True:
         try:
-            status = working_tree_status()
-            if status and status == previous:
-                # Tree changed and has been stable for one full interval.
-                commit_and_push(push=push)
+            if current_branch() == "main":
+                print("[skip] checkout is on protected 'main'; waiting...")
                 previous = None
-            elif status:
-                print(f"[change] {len(status.splitlines())} file(s) changed, "
-                      "waiting one interval for writes to settle...")
-                previous = status
+            elif git_operation_in_progress():
+                print("[skip] another git operation is in progress; waiting...")
+                previous = None
             else:
-                previous = None
+                status = working_tree_status()
+                if status and status == previous:
+                    # Tree changed and has been stable for one full interval.
+                    commit_and_push(push=push)
+                    previous = None
+                elif status:
+                    print(f"[change] {len(status.splitlines())} file(s) changed, "
+                          "waiting one interval for writes to settle...")
+                    previous = status
+                else:
+                    previous = None
+        except KeyboardInterrupt:
+            print("\nStopped.")
+            return
+        except Exception as err:  # never let one bad cycle kill the watcher
+            print(f"[warn] cycle failed, will retry: {err}")
+            previous = None
+        try:
             time.sleep(interval)
         except KeyboardInterrupt:
             print("\nStopped.")
