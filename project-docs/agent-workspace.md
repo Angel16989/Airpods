@@ -18,7 +18,7 @@
 | --- | --- | --- | --- | --- | --- |
 | Docs Agent | Specs, task packets, handoffs | TASK-005 (Complete) | Ready | 2026-07-12 | None |
 | Frontend Agent | UI implementation | None | Ready | 2026-07-12 | None |
-| Backend Agent | API and data | TASK-006 (Complete) | Ready | 2026-07-12 | None |
+| Backend Agent | API and data | TASK-007 (Complete) | Ready | 2026-07-12 | None |
 | QA Agent | Testing and verification | None | Ready | 2026-07-12 | None |
 
 ## Task Queue
@@ -33,10 +33,10 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 | TASK-004 | Spec core feature | Docs Agent | High | Complete | TASK-002 |
 | TASK-005 | Spec second feature | Docs Agent | Medium | Complete | TASK-004 |
 | TASK-006 | Data + API conventions | Backend Agent | High | Complete | TASK-003, TASK-004 |
-| TASK-007 | Git init + app scaffold | Backend Agent | High | Ready | TASK-003 |
-| TASK-008 | Test + lint toolchain | Backend Agent | High | Backlog | TASK-007 |
-| TASK-009 | Base UI foundation | Frontend Agent | High | Backlog | TASK-007 |
-| TASK-010 | Database setup + migrations | Backend Agent | High | Backlog | TASK-006, TASK-007 |
+| TASK-007 | Git init + app scaffold | Backend Agent | High | Complete | TASK-003 |
+| TASK-008 | Test + lint toolchain | Backend Agent | High | Ready | TASK-007 |
+| TASK-009 | Base UI foundation | Frontend Agent | High | Ready | TASK-007 |
+| TASK-010 | Database setup + migrations | Backend Agent | High | Ready | TASK-006, TASK-007 |
 | TASK-011 | Core feature API | Backend Agent | High | Backlog | TASK-008, TASK-010 |
 | TASK-012 | Core feature UI | Frontend Agent | High | Backlog | TASK-009, TASK-011 |
 | TASK-013 | Core feature hardening | Frontend Agent | High | Backlog | TASK-012 |
@@ -72,7 +72,7 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 
 ### 2026-07-12
 
-- Completed: TASK-001 starter workspace setup; full 21-task v0.1 pipeline planned with packets (TASK-002 to TASK-021) plus TASK-022 tooling; `scripts/auto_git_push.py` created. TASK-002 product definition completed and written into `shared-context.md`. TASK-003 tech stack chosen and approved by user (Kotlin + Jetpack Compose Android app, on-device only, DataStore, JUnit/Compose UI Testing/Espresso, Gradle -> Play Store); logged in `decision-log.md` and reflected in `shared-context.md` Tech Stack/Commands. TASK-004 core feature spec completed as `project-docs/features/airpods-detection-popup.md`. TASK-005 second feature spec completed as `project-docs/features/persistent-status-notification.md` (user chose a persistent battery-status notification over low-battery alerts or a home-screen widget); reuses the core feature's snapshot model and monitor stream. TASK-006 data/API conventions completed in `shared-context.md`, with local auth approach logged in `decision-log.md`.
+- Completed: TASK-001 starter workspace setup; full 21-task v0.1 pipeline planned with packets (TASK-002 to TASK-021) plus TASK-022 tooling; `scripts/auto_git_push.py` created. TASK-002 product definition completed and written into `shared-context.md`. TASK-003 tech stack chosen and approved by user (Kotlin + Jetpack Compose Android app, on-device only, DataStore, JUnit/Compose UI Testing/Espresso, Gradle -> Play Store); logged in `decision-log.md` and reflected in `shared-context.md` Tech Stack/Commands. TASK-004 core feature spec completed as `project-docs/features/airpods-detection-popup.md`. TASK-005 second feature spec completed as `project-docs/features/persistent-status-notification.md` (user chose a persistent battery-status notification over low-battery alerts or a home-screen widget); reuses the core feature's snapshot model and monitor stream. TASK-006 data/API conventions completed in `shared-context.md`, with local auth approach logged in `decision-log.md`. TASK-007 git init + app scaffold completed: verified the existing `app/` Gradle module (Kotlin + Compose, matches TASK-003 exactly) builds clean from a genuine fresh clone (`./gradlew build`, including `test` + `lint`); added a Prerequisites/Verified note to `shared-context.md` Commands. `installDebug`/`connectedAndroidTest` unverified — no device/emulator in this sandbox.
 - In progress: None.
 - Blocked: None.
-- Next: TASK-007 is ready to start. TASK-010 remains blocked until TASK-007 is complete, and TASK-015 remains blocked on TASK-011 (core feature API).
+- Next: TASK-008, TASK-009, and TASK-010 are ready to start now that TASK-007 is complete. TASK-015 remains blocked on TASK-011 (core feature API).

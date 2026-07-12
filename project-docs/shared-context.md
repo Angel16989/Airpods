@@ -24,6 +24,11 @@ See `decision-log.md` (2026-07-12, TASK-003) for options considered and reasonin
 
 ## Commands
 
+Prerequisites: a JDK 17+ available via `JAVA_HOME` (or on `PATH`), and an Android SDK
+referenced by a local, gitignored `local.properties` (`sdk.dir=...`) or `ANDROID_HOME`.
+`installDebug` and the `connectedAndroidTest` half of the test command need a connected
+device or running emulator.
+
 ```bash
 ./gradlew build
 ```
@@ -35,6 +40,10 @@ See `decision-log.md` (2026-07-12, TASK-003) for options considered and reasonin
 ```bash
 ./gradlew test connectedAndroidTest
 ```
+
+Verified 2026-07-12 (TASK-007): `./gradlew build` (includes `test` + `lint`) passes from a
+fresh clone. `installDebug`/`connectedAndroidTest` could not be exercised in the scaffold
+sandbox — no device/emulator was attached.
 
 ## Data And API Conventions
 
