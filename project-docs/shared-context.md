@@ -64,6 +64,6 @@ See `decision-log.md` (2026-07-12, TASK-003) for options considered and reasonin
 
 ## Open Questions
 
-- Which AirPods models should be supported first in the MVP?
-- What fallback should the popup use if Android overlay permissions are unavailable or denied?
+- Which exact AirPods models will be physically tested before v0.1 release?
+- What final app-store wording should describe Apple/AirPods compatibility without implying official affiliation?
 - Which non-core features should be considered after the MVP is stable?

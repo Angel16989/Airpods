@@ -4,8 +4,8 @@ Use this file as the main index for all features.
 
 | Feature | Status | Owner | Priority | Target Release | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Example Feature | Planned | Docs Agent | Medium | Starter docs | Created as TASK-001 starter feature spec. |
-| Project bootstrap | Blocked | Unassigned | High | Starter docs | TASK-002 needs product details from the user. |
+| AirPods Detection and Battery Popup | Planned | Docs Agent | High | v0.1 | Core feature spec for TASK-004; covers AirPods detection, battery snapshot, popup, and fallback states. |
+| Project bootstrap | Shipped | Docs Agent | High | Starter docs | Product definition and stack planning completed through TASK-002/TASK-003. |
 
 ## Status Values
 
