@@ -7,8 +7,10 @@
 - Current release: pre-0.1
 - Repo path: `/home/rasik/Desktop/APPLE ICON`
 - Repo URL: https://github.com/Angel16989/Airpods
-- Main branch: `main` — protected, never commit or push to it
-- Working branch: `dev` — all agent work happens here
+- Main branch: `main` — production branch; only release and hotfix merges land here
+- Integration branch: `develop` — daily development branch; feature and bugfix work merges here before release
+- Legacy branch: `dev` — existing branch kept for compatibility; prefer `develop` for new work
+- Supporting branches: `feature/*`, `bugfix/*`, `hotfix/*`, `release/*`
 
 ## Active Agents
 
@@ -62,6 +64,7 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 - Feature specs live in `project-docs/features/`.
 - Agent role briefs live in `project-docs/agents/`.
 - Handoffs live in `project-docs/handoffs/`.
+- Branching strategy lives in `project-docs/branching-strategy.md`.
 - Tooling scripts live in `scripts/` (`auto_git_push.py` is ready; run it after git init).
 
 ## Daily Update
