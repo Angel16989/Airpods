@@ -133,9 +133,10 @@ def main():
         sys.exit(1)
 
     # Project rule: main is protected. Never auto-commit or auto-push to it.
+    # See project-docs/branching-strategy.md.
     if current_branch() == "main":
         print("Refusing to run on 'main' (protected branch).")
-        print("Switch to the working branch first:  git checkout dev")
+        print("Switch to the integration branch first:  git switch develop")
         sys.exit(1)
 
     if args.once:
