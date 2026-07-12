@@ -49,9 +49,9 @@ TASK-002 defines what the product is. The core feature is the one flow the produ
 
 ## Acceptance Criteria
 
-- [ ] Feature spec exists with no empty sections.
-- [ ] User confirmed the feature scope.
-- [ ] Feature directory updated (core feature added, Example Feature removed or marked replaced).
+- [x] Feature spec exists with no empty sections.
+- [x] User confirmed the feature scope.
+- [x] Feature directory updated (core feature added, Example Feature removed or marked replaced).
 
 ## Suggested Checks
 
@@ -70,9 +70,9 @@ grep -rn "TBD\|Example Feature" project-docs/features/
 
 ## Agent Notes
 
-- Assumptions: TASK-002 now defines Apple Icon as a native Android utility for AirPods users. The core feature is AirPods BLE detection plus an iOS-style popup with animated AirPod visual and battery percentage.
+- Assumptions: TASK-002 now defines Apple Icon as a native Android utility for AirPods users. The core feature is AirPods BLE detection plus an iOS-style popup with animated AirPod visual and battery percentage. v0.1 uses original AirPods-inspired visuals and descriptive compatibility language rather than copied Apple assets or official-brand claims.
 - Questions:
-  - Which AirPods models should be supported first in the MVP?
-  - What fallback should the popup use if Android overlay permissions are unavailable or denied?
-- Progress: Started review on 2026-07-12. Confirmed required template and dependencies. Product/core feature blocker cleared by TASK-002 completion.
-- Final status: Ready for full core feature spec.
+  - Non-blocking: Which exact AirPods models will be physically tested before v0.1 release?
+  - Non-blocking: What final app-store wording should be used to describe Apple/AirPods compatibility without implying official affiliation?
+- Progress: Started review on 2026-07-12. Confirmed required template and dependencies. Product/core feature blocker cleared by TASK-002 completion. Created `project-docs/features/airpods-detection-popup.md`, removed the placeholder feature file, and updated the feature directory.
+- Final status: Complete.
