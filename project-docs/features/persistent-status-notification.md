@@ -99,7 +99,7 @@ No HTTP endpoint. v0.1 is fully on-device, same as the core feature.
 {
   "notification_enabled": true,
   "notification_permission_granted": true,
-  "device_id": "local-airpods-id"
+  "device_id": "airpods_7f4a9c2d1b66"
 }
 ```
 

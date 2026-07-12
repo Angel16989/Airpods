@@ -18,3 +18,4 @@ captures/
 *.aab
 *.iml
 .idea/
+dispatch-logs/

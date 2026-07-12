@@ -49,9 +49,9 @@ Feature specs (TASK-004/005) define per-feature contracts; this task locks the c
 
 ## Acceptance Criteria
 
-- [ ] No TBDs remain in the Data And API Conventions section.
-- [ ] Auth decision-log entry is Active.
-- [ ] Feature specs cross-checked for consistency.
+- [x] No TBDs remain in the Data And API Conventions section.
+- [x] Auth decision-log entry is Active.
+- [x] Feature specs cross-checked for consistency.
 
 ## Suggested Checks
 
@@ -70,7 +70,9 @@ grep -n "TBD" project-docs/shared-context.md
 
 ## Agent Notes
 
-- Assumptions:
-- Questions:
-- Progress:
-- Final status:
+- Assumptions: v0.1 remains fully on-device with no backend, no account system, and no remote sync; Android runtime permissions and local settings are the authorization boundary.
+- Questions: None.
+- Progress: Added concrete project-wide data/API conventions to `project-docs/shared-context.md`, including local ID format, timestamp format, error envelope example, pagination rule, and auth model.
+- Progress: Added an Active auth decision to `project-docs/decision-log.md`.
+- Progress: Cross-checked `airpods-detection-popup.md` and `persistent-status-notification.md`; aligned example `device_id` values with the shared convention.
+- Final status: Complete on 2026-07-12.

@@ -130,7 +130,7 @@ The monitor returns a stream of AirPods battery snapshots to the UI and popup co
 
 ```json
 {
-  "device_id": "local-airpods-id",
+  "device_id": "airpods_7f4a9c2d1b66",
   "display_name": "AirPods Pro",
   "model_hint": "airpods_pro",
   "connection_state": "connected",

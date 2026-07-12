@@ -36,6 +36,39 @@ See `decision-log.md` (2026-07-12, TASK-003) for options considered and reasonin
 ./gradlew test connectedAndroidTest
 ```
 
+## Data And API Conventions
+
+- Runtime model: v0.1 has no remote backend and no public HTTP API. "API" means local Kotlin contracts between the monitor, DataStore repository, notification controller, popup controller, and Compose UI.
+- Naming: Kotlin code uses `camelCase`; serialized examples and DataStore key names use `snake_case`; enum values serialize as lowercase `snake_case`.
+- IDs: AirPods snapshots use `device_id` values in the format `airpods_<12 lowercase hex chars>`, derived from a salted hash of available Bluetooth identity data. Raw Bluetooth MAC addresses, serial numbers, and hardware identifiers must not be displayed, logged, or persisted in raw form.
+- Local numeric IDs: Android notification IDs are stable non-negative integers. The persistent status notification uses one stable ID per active `device_id`, so updates replace the existing notification.
+- Dates and times: persisted and serialized timestamps use ISO-8601/RFC-3339 date-time strings with an explicit timezone offset, for example `2026-07-12T10:30:00+10:00`. UI may display localized relative time, but stored values must keep the explicit offset.
+- Battery values: battery percentages are nullable integers from 0 through 100. `null` means unknown and must display as "Unknown"; code must not infer or fake missing battery values.
+- Success payloads: local snapshot streams return the domain model directly, matching the feature specs. Successful responses are not wrapped in an HTTP-style envelope.
+- Error response format: recoverable local failures use a typed error envelope with `ok`, `error.code`, `error.message`, `error.recoverable`, `error.user_action`, optional `error.details`, and `occurred_at`.
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "BLUETOOTH_PERMISSION_DENIED",
+    "message": "Bluetooth permission is required before AirPods monitoring can start.",
+    "recoverable": true,
+    "user_action": "open_bluetooth_permission_settings",
+    "details": {
+      "permission": "BLUETOOTH_SCAN"
+    }
+  },
+  "occurred_at": "2026-07-12T10:32:00+10:00"
+}
+```
+
+- Error codes: use uppercase `SCREAMING_SNAKE_CASE`; user-facing copy can be friendlier, but logs and tests should assert on the stable code.
+- Pagination: current v0.1 contracts are single-item state streams or settings reads and do not paginate. If a future local collection is added, use cursor pagination with `page_size` default `50`, maximum `100`, newest-first ordering by ISO timestamp, and `next_cursor: null` when complete.
+- Authentication and authorization: v0.1 has no accounts, passwords, sessions, API keys, bearer tokens, or cloud auth. Access is authorized only by the local Android user through runtime permissions, overlay permission, notification permission, Bluetooth availability, and in-app settings such as `monitoring_enabled`, `overlay_enabled`, and `notification_enabled`.
+- Persistence: DataStore stores only minimal local state required by the specs: settings, last detected display label, last known battery snapshot, popup cooldown metadata, and notification state. No remote sync is allowed for v0.1.
+- Diagnostics: no external analytics or network diagnostics are enabled in v0.1. Any debug events stay on-device unless a later decision explicitly adds opt-in diagnostics.
+
 ## Agent Rules
 
 - Read this file before starting work.
