@@ -48,7 +48,8 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 | TASK-019 | Accessibility + responsive audit | Frontend Agent | High | Backlog | TASK-018 |
 | TASK-020 | README + release notes | Docs Agent | High | Backlog | TASK-018 |
 | TASK-021 | Release v0.1 (checklist + ship) | QA Agent | High | Backlog | TASK-019, TASK-020 |
-| TASK-022 | Task status dashboard (tooling) | Backend Agent | Low | Backlog | None |
+| TASK-022 | Local task dashboard (offline fallback) | Backend Agent | Low | Paused | None |
+| TASK-023 | Agent management dashboard (`dashboard/index.html`) | Lead Agent | High | Complete | None |
 
 ## Current Blockers
 
