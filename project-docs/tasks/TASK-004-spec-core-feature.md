@@ -70,7 +70,9 @@ grep -rn "TBD\|Example Feature" project-docs/features/
 
 ## Agent Notes
 
-- Assumptions:
+- Assumptions: TASK-002 now defines Apple Icon as a native Android utility for AirPods users. The core feature is AirPods BLE detection plus an iOS-style popup with animated AirPod visual and battery percentage.
 - Questions:
-- Progress:
-- Final status:
+  - Which AirPods models should be supported first in the MVP?
+  - What fallback should the popup use if Android overlay permissions are unavailable or denied?
+- Progress: Started review on 2026-07-12. Confirmed required template and dependencies. Product/core feature blocker cleared by TASK-002 completion.
+- Final status: Ready for full core feature spec.

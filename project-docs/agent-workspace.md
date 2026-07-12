@@ -16,9 +16,9 @@
 
 | Agent | Role | Current Task | Status | Last Update | Blockers |
 | --- | --- | --- | --- | --- | --- |
-| Docs Agent | Specs, task packets, handoffs | TASK-001 | Complete | 2026-07-12 | None |
+| Docs Agent | Specs, task packets, handoffs | TASK-004 | Ready | 2026-07-12 | None |
 | Frontend Agent | UI implementation | None | Ready | 2026-07-12 | None |
-| Backend Agent | API and data | None | Ready | 2026-07-12 | None |
+| Backend Agent | API and data | TASK-003 (Complete) | Ready | 2026-07-12 | None |
 | QA Agent | Testing and verification | None | Ready | 2026-07-12 | None |
 
 ## Task Queue
@@ -28,9 +28,9 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 | Task ID | Feature | Owner | Priority | Status | Depends On |
 | --- | --- | --- | --- | --- | --- |
 | TASK-001 | Starter workspace setup | Docs Agent | Medium | Complete | None |
-| TASK-002 | Define product + fill shared context | Unassigned | High | Blocked | User input |
-| TASK-003 | Choose tech stack | Backend Agent | High | Backlog | TASK-002 |
-| TASK-004 | Spec core feature | Docs Agent | High | Backlog | TASK-002 |
+| TASK-002 | Define product + fill shared context | Docs Agent | High | Complete | User input |
+| TASK-003 | Choose tech stack | Backend Agent | High | Complete | TASK-002 |
+| TASK-004 | Spec core feature | Docs Agent | High | Ready | TASK-002 |
 | TASK-005 | Spec second feature | Docs Agent | Medium | Backlog | TASK-004 |
 | TASK-006 | Data + API conventions | Backend Agent | High | Backlog | TASK-003, TASK-004 |
 | TASK-007 | Git init + app scaffold | Backend Agent | High | Backlog | TASK-003 |
@@ -55,7 +55,7 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 
 | Blocker | Owner | Needed From | Date Raised | Status |
 | --- | --- | --- | --- | --- |
-| Product definition and tech stack are still TBD | Unassigned | User | 2026-07-12 | Open |
+| None | None | None | 2026-07-12 | None |
 
 ## Integration Notes
 
@@ -72,7 +72,7 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 
 ### 2026-07-12
 
-- Completed: TASK-001 starter workspace setup; full 21-task v0.1 pipeline planned with packets (TASK-002 to TASK-021) plus TASK-022 tooling; `scripts/auto_git_push.py` created.
+- Completed: TASK-001 starter workspace setup; full 21-task v0.1 pipeline planned with packets (TASK-002 to TASK-021) plus TASK-022 tooling; `scripts/auto_git_push.py` created. TASK-002 product definition completed and written into `shared-context.md`. TASK-003 tech stack chosen and approved by user (Kotlin + Jetpack Compose Android app, on-device only, DataStore, JUnit/Compose UI Testing/Espresso, Gradle → Play Store); logged in `decision-log.md` and reflected in `shared-context.md` Tech Stack/Commands.
 - In progress: None.
-- Blocked: TASK-002 needs product details from the user.
-- Next: User answers TASK-002 questions, then TASK-003 (stack) and TASK-004 (core feature spec). TASK-022 can be done any time by a cheaper model.
+- Blocked: None.
+- Next: Start TASK-004 core feature spec. TASK-006/TASK-007 are now unblocked on the product/stack side, but TASK-006 still depends on TASK-004.
