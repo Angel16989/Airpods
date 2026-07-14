@@ -16,8 +16,9 @@ set -u
 cd "$(dirname "$0")/.." || exit 1
 mkdir -p dispatch-logs
 
-if ! pgrep -f "http.server 8721" >/dev/null; then
-  nohup python3 -m http.server 8721 --bind 127.0.0.1 >/dev/null 2>&1 &
+if ! pgrep -f "dashboard_server.py.*8721" >/dev/null; then
+  pkill -f "http.server 8721" >/dev/null 2>&1 || true
+  nohup python3 scripts/dashboard_server.py --repo "$PWD" --bind 127.0.0.1 --port 8721 >> dispatch-logs/dashboard.log 2>&1 &
   echo "[start] dashboard: http://127.0.0.1:8721/dashboard/"
 else
   echo "[ok] dashboard already running: http://127.0.0.1:8721/dashboard/"
