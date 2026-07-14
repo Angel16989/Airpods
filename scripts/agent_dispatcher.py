@@ -16,6 +16,8 @@ Usage:
     python3 scripts/agent_dispatcher.py --runner codex --full-auto # Codex, no sandbox
     python3 scripts/agent_dispatcher.py --runner codex-local \
         --model qwen2.5-coder:3b                                  # Codex + local Ollama
+    python3 scripts/agent_dispatcher.py --runner codex-tower \
+        --model qwen3:8b                                           # Codex + tower Ollama
 
 Notes:
 - Default permission mode is acceptEdits: agents can read/edit files but
@@ -128,10 +130,18 @@ def run_task(task, args):
     LOG_DIR.mkdir(exist_ok=True)
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     log_path = LOG_DIR / f"{task['id']}-{stamp}.log"
-    if args.runner in {"codex", "codex-local"}:
+    if args.runner in {"codex", "codex-local", "codex-tower"}:
         cmd = ["codex", "exec", "-C", str(REPO_ROOT)]
         if args.runner == "codex-local":
             cmd += ["--oss", "--local-provider", args.local_provider]
+        elif args.runner == "codex-tower":
+            cmd += [
+                "-c", f'model_provider="{args.tower_provider_name}"',
+                "-c", f'model_providers.{args.tower_provider_name}.name="Tower Ollama"',
+                "-c", f'model_providers.{args.tower_provider_name}.base_url="{args.tower_ollama_base_url}"',
+                "-c", f'model_providers.{args.tower_provider_name}.wire_api="responses"',
+                "-c", f'model_providers.{args.tower_provider_name}.env_key="{args.tower_api_key_env}"',
+            ]
         if args.model:
             cmd += ["-m", args.model]
         if args.full_auto:
@@ -161,6 +171,8 @@ def run_task(task, args):
         env = os.environ.copy()
         if args.ollama_host:
             env["OLLAMA_HOST"] = args.ollama_host
+        if args.runner == "codex-tower":
+            env.setdefault(args.tower_api_key_env, "ollama")
         try:
             proc = subprocess.run(cmd, cwd=REPO_ROOT, stdout=log, stderr=subprocess.STDOUT,
                                   timeout=args.task_timeout, env=env)
@@ -177,15 +189,22 @@ def run_task(task, args):
 
 def main():
     ap = argparse.ArgumentParser(description="Assign board tasks to headless Claude Code agents.")
-    ap.add_argument("--runner", choices=["claude", "codex", "codex-local"], default="claude",
-                    help="which CLI runs the agents: Claude Code, hosted Codex, or Codex backed by a local OSS provider")
+    ap.add_argument("--runner", choices=["claude", "codex", "codex-local", "codex-tower"], default="claude",
+                    help="which CLI runs the agents: Claude Code, hosted Codex, local Codex, or tower-backed Codex")
     ap.add_argument("--model", default=None,
                     help="model for spawned agents (default: sonnet for claude, "
-                         "your configured default for codex, qwen2.5-coder:3b recommended for codex-local)")
+                         "your configured default for codex, qwen2.5-coder:3b recommended for codex-local, "
+                         "qwen3:8b recommended for codex-tower)")
     ap.add_argument("--local-provider", choices=["ollama", "lmstudio"], default="ollama",
                     help="local OSS provider used only with --runner codex-local (default ollama)")
     ap.add_argument("--ollama-host", default=None,
                     help="Ollama endpoint for --runner codex-local, e.g. http://127.0.0.1:11434 or an SSH-forwarded tower port")
+    ap.add_argument("--tower-ollama-base-url", default="http://127.0.0.1:11435/v1/",
+                    help="OpenAI-compatible Ollama /v1 endpoint for --runner codex-tower")
+    ap.add_argument("--tower-provider-name", default="tower-ollama",
+                    help="custom Codex provider name for --runner codex-tower")
+    ap.add_argument("--tower-api-key-env", default="TOWER_OLLAMA_API_KEY",
+                    help="env var Codex should read as the dummy API key for tower Ollama")
     ap.add_argument("--max-tasks", type=int, default=3, help="stop after this many attempts (default 3)")
     ap.add_argument("--task-timeout", type=int, default=2400, help="seconds per task (default 2400)")
     ap.add_argument("--dry-run", action="store_true", help="print the plan, run nothing")
