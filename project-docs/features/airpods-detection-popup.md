@@ -113,7 +113,12 @@ No HTTP endpoint. v0.1 is fully on-device. Downstream implementation should expo
 
 `LOCAL AirPodsMonitor.observeSnapshots()`
 
-The monitor returns a stream of AirPods battery snapshots to the UI and popup controller.
+The monitor returns a stream of `AirPodsMonitorResult` values to the UI and popup controller:
+
+- `AirPodsMonitorResult.Snapshot(snapshot, popupShouldShow, fallbackErrors)` for successful or degraded local snapshots.
+- `AirPodsMonitorResult.Failure(error)` for fatal local monitor states where scanning must not start.
+
+Successful snapshot payloads are still the `AirPodsBatterySnapshot` domain model, with `popupShouldShow` added as monitor metadata. `fallbackErrors` contains conventional local error envelopes for degraded but usable states such as overlay fallback, unknown battery values, or stale cached data.
 
 ### Request
 
@@ -123,6 +128,18 @@ The monitor returns a stream of AirPods battery snapshots to the UI and popup co
   "overlay_enabled": true,
   "scan_reason": "app_start_or_bluetooth_event",
   "cooldown_seconds": 30
+}
+```
+
+The implemented Kotlin request also includes `freshness_window_seconds` (default `120`) so cached snapshots can be marked stale deterministically. Platform permission and availability state is supplied separately through `AirPodsMonitorPermissions`:
+
+```json
+{
+  "bluetooth_permission_granted": true,
+  "bluetooth_available": true,
+  "overlay_permission_granted": true,
+  "notification_permission_granted": false,
+  "scan_throttled": false
 }
 ```
 
@@ -144,6 +161,24 @@ The monitor returns a stream of AirPods battery snapshots to the UI and popup co
   "last_seen_at": "2026-07-12T10:30:00+10:00",
   "is_stale": false,
   "popup_should_show": true
+}
+```
+
+Fatal error response shape:
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "BLUETOOTH_PERMISSION_DENIED",
+    "message": "Apple Icon needs Bluetooth permission to detect AirPods.",
+    "recoverable": true,
+    "user_action": "open_bluetooth_permission_settings",
+    "details": {
+      "permission": "BLUETOOTH_SCAN"
+    }
+  },
+  "occurred_at": "2026-07-14T09:00:00+10:00"
 }
 ```
 

@@ -69,6 +69,17 @@ Run the Test and Lint commands; exercise each endpoint manually against seed dat
 ## Agent Notes
 
 - Assumptions:
+  - "Core feature API" means the local Kotlin contract described in `shared-context.md`, not an HTTP/server endpoint.
+  - Real BLE scanner integration can be injected later through `AirPodsSignalSource`; TASK-011 implements the stable local contract, parser, permission gates, persistence, and tests without requiring physical AirPods hardware.
+  - The spec was ambiguous about how `observeSnapshots()` should expose both success snapshots and conventional error envelopes, so `airpods-detection-popup.md` now documents `AirPodsMonitorResult.Snapshot` and `AirPodsMonitorResult.Failure`.
 - Questions:
+  - None blocking.
 - Progress:
-- Final status:
+  - 2026-07-14: Created branch `feature/task-011-core-feature-api` from current `develop` after confirming there was no existing local or remote TASK-011 branch and the worktree was clean.
+  - 2026-07-14: Added local monitor API models (`AirPodsMonitorRequest`, `AirPodsMonitorPermissions`, `AirPodsMonitorResult`, `AirPodsBluetoothPayload`, typed error envelopes) and manifest permission declarations for Bluetooth/BLE, notifications, and overlay popup support.
+  - 2026-07-14: Added `AirPodsPayloadParser` with salted `airpods_<12 hex>` IDs, battery validation, unknown/null battery handling, model hint inference, and conventional parse errors without exposing raw Bluetooth identifiers.
+  - 2026-07-14: Added `AirPodsMonitor.observeSnapshots()` backed by `AirPodsPreferencesRepository`, including seeded/cached snapshot emission, signal payload persistence, permission/Bluetooth/scan-throttle failures, overlay fallback warnings, stale data marking, battery-unavailable warnings, and popup cooldown suppression.
+  - 2026-07-14: Added JVM parser and monitor tests covering happy path, seeded DataStore behavior, validation, permission gates, every spec error case, stale detection, and cooldown.
+  - 2026-07-14: Wrote Frontend handoff at `project-docs/handoffs/backend-to-frontend-TASK-011-core-feature-api.md`.
+  - 2026-07-14: Verified `ktlintFormat`, `./gradlew test`, `./gradlew ktlintCheck`, `./gradlew build`, and Android test-source compilation pass with JDK 17 at `~/.local/share/jdks/jdk-17.0.19+10`. `connectedAndroidTest` was not run because no device/emulator is available.
+- Final status: Complete. Acceptance criteria met; ready for TASK-012 Frontend Agent.
