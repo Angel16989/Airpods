@@ -17,8 +17,9 @@
 | Agent | Role | Current Task | Status | Last Update | Blockers |
 | --- | --- | --- | --- | --- | --- |
 | Docs Agent | Specs, task packets, handoffs | TASK-005 (Complete) | Ready | 2026-07-12 | None |
-| Frontend Agent | UI implementation | None | Ready | 2026-07-12 | None |
-| Backend Agent | API and data | TASK-007 (Complete) | Ready | 2026-07-12 | None |
+| Frontend Agent | UI implementation | TASK-009 | In Progress | 2026-07-14 | None |
+| Backend Agent | API and data | TASK-010 | In Progress | 2026-07-14 | None |
+| Backend Agent (2) | Test/lint toolchain | TASK-008 (Complete) | Ready | 2026-07-14 | None |
 | QA Agent | Testing and verification | None | Ready | 2026-07-12 | None |
 
 ## Task Queue
@@ -34,9 +35,9 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 | TASK-005 | Spec second feature | Docs Agent | Medium | Complete | TASK-004 |
 | TASK-006 | Data + API conventions | Backend Agent | High | Complete | TASK-003, TASK-004 |
 | TASK-007 | Git init + app scaffold | Backend Agent | High | Complete | TASK-003 |
-| TASK-008 | Test + lint toolchain | Backend Agent | High | Ready | TASK-007 |
-| TASK-009 | Base UI foundation | Frontend Agent | High | Ready | TASK-007 |
-| TASK-010 | Database setup + migrations | Backend Agent | High | Ready | TASK-006, TASK-007 |
+| TASK-008 | Test + lint toolchain | Backend Agent | High | Complete | TASK-007 |
+| TASK-009 | Base UI foundation | Frontend Agent | High | In Progress | TASK-007 |
+| TASK-010 | Database setup + migrations | Backend Agent | High | In Progress | TASK-006, TASK-007 |
 | TASK-011 | Core feature API | Backend Agent | High | Backlog | TASK-008, TASK-010 |
 | TASK-012 | Core feature UI | Frontend Agent | High | Backlog | TASK-009, TASK-011 |
 | TASK-013 | Core feature hardening | Frontend Agent | High | Backlog | TASK-012 |
@@ -76,3 +77,10 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 - In progress: None.
 - Blocked: None.
 - Next: TASK-008, TASK-009, and TASK-010 are ready to start now that TASK-007 is complete. TASK-015 remains blocked on TASK-011 (core feature API).
+
+### 2026-07-14
+
+- Completed: TASK-008 test + lint toolchain. Added the `org.jlleitschuh.gradle.ktlint` plugin (Kotlin style linter/formatter, wired into `check`/`build`), fixed 2 real style violations via `ktlintFormat`, and whitelisted `@Composable` `PascalCase` naming via `.editorconfig`. Documented `ktlintCheck`/`ktlintFormat` commands and a new Testing Conventions section in `shared-context.md`; logged the ktlint choice in `decision-log.md`. `./gradlew build` (compile + unit tests + ktlintCheck + AGP lint) verified clean.
+- In progress: TASK-009 (Frontend Agent) and TASK-010 (Backend Agent) started concurrently in the same working tree — see their task packets for current status.
+- Blocked: None.
+- Next: TASK-011 (core feature API) is unblocked once TASK-010 completes; TASK-012 unblocks once TASK-009 and TASK-011 complete.
