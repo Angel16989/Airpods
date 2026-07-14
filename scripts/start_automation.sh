@@ -8,9 +8,11 @@
 #   bash scripts/start_automation.sh                     # Claude agents, 4 tasks
 #   bash scripts/start_automation.sh --max-tasks 6
 #   bash scripts/start_automation.sh --runner codex      # Codex agents instead
+#   bash scripts/start_automation.sh --runner codex-local --model qwen2.5-coder:3b
+#   bash scripts/start_automation.sh --runner codex-local --model qwen2.5-coder:3b --ollama-host http://127.0.0.1:11434
 #
 # Stop everything:
-#   pkill -f agent_dispatcher.py; pkill -f auto_git_push.py; pkill -f "http.server 8721"
+#   pkill -f agent_dispatcher.py; pkill -f auto_git_push.py; pkill -f "dashboard_server.py.*8721"
 
 set -u
 cd "$(dirname "$0")/.." || exit 1

@@ -14,6 +14,8 @@ Usage:
                                                        # commands (git/gradle) without prompts
     python3 scripts/agent_dispatcher.py --runner codex             # Codex, sandboxed
     python3 scripts/agent_dispatcher.py --runner codex --full-auto # Codex, no sandbox
+    python3 scripts/agent_dispatcher.py --runner codex-local \
+        --model qwen2.5-coder:3b                                  # Codex + local Ollama
 
 Notes:
 - Default permission mode is acceptEdits: agents can read/edit files but
@@ -29,6 +31,7 @@ Notes:
 
 import argparse
 import datetime
+import os
 import re
 import subprocess
 import sys
@@ -125,8 +128,10 @@ def run_task(task, args):
     LOG_DIR.mkdir(exist_ok=True)
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     log_path = LOG_DIR / f"{task['id']}-{stamp}.log"
-    if args.runner == "codex":
+    if args.runner in {"codex", "codex-local"}:
         cmd = ["codex", "exec", "-C", str(REPO_ROOT)]
+        if args.runner == "codex-local":
+            cmd += ["--oss", "--local-provider", args.local_provider]
         if args.model:
             cmd += ["-m", args.model]
         if args.full_auto:
@@ -153,9 +158,12 @@ def run_task(task, args):
     with open(log_path, "w") as log:
         log.write(f"# {task['id']} {task['feature']}\n# started {stamp}\n\n")
         log.flush()
+        env = os.environ.copy()
+        if args.ollama_host:
+            env["OLLAMA_HOST"] = args.ollama_host
         try:
             proc = subprocess.run(cmd, cwd=REPO_ROOT, stdout=log, stderr=subprocess.STDOUT,
-                                  timeout=args.task_timeout)
+                                  timeout=args.task_timeout, env=env)
             code = proc.returncode
         except subprocess.TimeoutExpired:
             log.write(f"\n# DISPATCHER: killed after {args.task_timeout}s timeout\n")
@@ -169,11 +177,15 @@ def run_task(task, args):
 
 def main():
     ap = argparse.ArgumentParser(description="Assign board tasks to headless Claude Code agents.")
-    ap.add_argument("--runner", choices=["claude", "codex"], default="claude",
-                    help="which CLI runs the agents: Claude Code or Codex (default claude)")
+    ap.add_argument("--runner", choices=["claude", "codex", "codex-local"], default="claude",
+                    help="which CLI runs the agents: Claude Code, hosted Codex, or Codex backed by a local OSS provider")
     ap.add_argument("--model", default=None,
                     help="model for spawned agents (default: sonnet for claude, "
-                         "your configured default for codex)")
+                         "your configured default for codex, qwen2.5-coder:3b recommended for codex-local)")
+    ap.add_argument("--local-provider", choices=["ollama", "lmstudio"], default="ollama",
+                    help="local OSS provider used only with --runner codex-local (default ollama)")
+    ap.add_argument("--ollama-host", default=None,
+                    help="Ollama endpoint for --runner codex-local, e.g. http://127.0.0.1:11434 or an SSH-forwarded tower port")
     ap.add_argument("--max-tasks", type=int, default=3, help="stop after this many attempts (default 3)")
     ap.add_argument("--task-timeout", type=int, default=2400, help="seconds per task (default 2400)")
     ap.add_argument("--dry-run", action="store_true", help="print the plan, run nothing")
