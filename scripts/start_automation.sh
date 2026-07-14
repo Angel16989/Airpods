@@ -72,7 +72,7 @@ fi
 
 if ! pgrep -f "auto_git_push.py" >/dev/null; then
   : "${AUTO_PUSH_INTERVAL:=5}"
-  nohup python3 -u scripts/auto_git_push.py --interval "$AUTO_PUSH_INTERVAL" >> dispatch-logs/watcher.log 2>&1 &
+  setsid python3 -u scripts/auto_git_push.py --interval "$AUTO_PUSH_INTERVAL" >> dispatch-logs/watcher.log 2>&1 &
   echo "[start] auto-push watcher every ${AUTO_PUSH_INTERVAL}s (log: dispatch-logs/watcher.log)"
 else
   echo "[ok] auto-push watcher already running"
