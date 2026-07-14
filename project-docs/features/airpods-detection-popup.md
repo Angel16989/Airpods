@@ -215,6 +215,8 @@ Fatal error response shape:
 
 No external analytics service is required for v0.1. If local debug events are added, they must stay on-device unless the user explicitly opts into diagnostics later.
 
+Implementation note (TASK-013): the core feature emits the analytics-table events as on-device `AirPodsDebugEvent` values and writes them to local Logcat under `AppleIconAirPods`. No external analytics provider is used for v0.1, and raw Bluetooth identifiers are not included in event properties.
+
 | Event | Trigger | Properties |
 | --- | --- | --- |
 | airpods_detected | Supported AirPods signal is parsed. | model_hint, source, has_left, has_right, has_case |

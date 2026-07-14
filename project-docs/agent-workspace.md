@@ -17,7 +17,7 @@
 | Agent | Role | Current Task | Status | Last Update | Blockers |
 | --- | --- | --- | --- | --- | --- |
 | Docs Agent | Specs, task packets, handoffs | TASK-005 (Complete) | Ready | 2026-07-12 | None |
-| Frontend Agent | UI implementation | TASK-012 (Complete) | Ready | 2026-07-14 | None |
+| Frontend Agent | UI implementation | TASK-013 (Complete) | Ready | 2026-07-15 | None |
 | Backend Agent | API and data | TASK-011 (Complete) | Ready | 2026-07-14 | None |
 | Backend Agent (2) | Test/lint toolchain | TASK-008 (Complete) | Ready | 2026-07-14 | None |
 | QA Agent | Testing and verification | None | Ready | 2026-07-12 | None |
@@ -40,7 +40,7 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 | TASK-010 | Database setup + migrations | Backend Agent | High | Complete | TASK-006, TASK-007 |
 | TASK-011 | Core feature API | Backend Agent | High | Complete | TASK-008, TASK-010 |
 | TASK-012 | Core feature UI | Frontend Agent | High | Complete | TASK-009, TASK-011 |
-| TASK-013 | Core feature hardening | Frontend Agent | High | Backlog | TASK-012 |
+| TASK-013 | Core feature hardening | Frontend Agent | High | Complete | TASK-012 |
 | TASK-014 | QA core feature | QA Agent | High | Backlog | TASK-013 |
 | TASK-015 | Second feature API | Backend Agent | Medium | Backlog | TASK-005, TASK-011 |
 | TASK-016 | Second feature UI | Frontend Agent | Medium | Backlog | TASK-009, TASK-015 |
@@ -86,3 +86,9 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 - Completed: TASK-012 core feature UI. Replaced the placeholder shell with the real AirPods dashboard, runtime permission checklist, settings controls, latest snapshot card, original Compose-drawn popup visual, manual test popup path through `AirPodsMonitor`, mapper tests, connected Compose UI tests, and QA handoff. Verified `./gradlew test ktlintCheck build`, Android test-source compilation, `./gradlew connectedAndroidTest` on attached `SM-S731B - 16`, `./gradlew installDebug`, and main activity launch.
 - Blocked: None.
 - Next: TASK-013 (core feature hardening) is ready. TASK-015 remains unblocked for the second feature API once sequencing allows.
+
+### 2026-07-15
+
+- Completed: TASK-013 core feature hardening. Added local-only debug events for the core analytics table, verified all core spec error messages and recovery actions in mapper tests, covered rendered fallback issue messages in Compose UI tests, recorded the Logcat/local-event approach in the core feature spec, and wrote the QA handoff. `JAVA_HOME=$HOME/.local/share/jdks/jdk-17.0.19+10 ./gradlew test ktlintCheck` passes; default Java 25 remains unsuitable for Gradle because it lacks the compiler capability.
+- Blocked: None.
+- Next: TASK-014 QA core feature is ready.
