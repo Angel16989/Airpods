@@ -17,8 +17,8 @@
 | Agent | Role | Current Task | Status | Last Update | Blockers |
 | --- | --- | --- | --- | --- | --- |
 | Docs Agent | Specs, task packets, handoffs | TASK-005 (Complete) | Ready | 2026-07-12 | None |
-| Frontend Agent | UI implementation | TASK-009 | In Progress | 2026-07-14 | None |
-| Backend Agent | API and data | TASK-010 | In Progress | 2026-07-14 | None |
+| Frontend Agent | UI implementation | TASK-009 (Complete) | Ready | 2026-07-14 | None |
+| Backend Agent | API and data | TASK-010 (Complete) | Ready | 2026-07-14 | None |
 | Backend Agent (2) | Test/lint toolchain | TASK-008 (Complete) | Ready | 2026-07-14 | None |
 | QA Agent | Testing and verification | None | Ready | 2026-07-12 | None |
 
@@ -36,9 +36,9 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 | TASK-006 | Data + API conventions | Backend Agent | High | Complete | TASK-003, TASK-004 |
 | TASK-007 | Git init + app scaffold | Backend Agent | High | Complete | TASK-003 |
 | TASK-008 | Test + lint toolchain | Backend Agent | High | Complete | TASK-007 |
-| TASK-009 | Base UI foundation | Frontend Agent | High | In Progress | TASK-007 |
-| TASK-010 | Database setup + migrations | Backend Agent | High | In Progress | TASK-006, TASK-007 |
-| TASK-011 | Core feature API | Backend Agent | High | Backlog | TASK-008, TASK-010 |
+| TASK-009 | Base UI foundation | Frontend Agent | High | Complete | TASK-007 |
+| TASK-010 | Database setup + migrations | Backend Agent | High | Complete | TASK-006, TASK-007 |
+| TASK-011 | Core feature API | Backend Agent | High | Ready | TASK-008, TASK-010 |
 | TASK-012 | Core feature UI | Frontend Agent | High | Backlog | TASK-009, TASK-011 |
 | TASK-013 | Core feature hardening | Frontend Agent | High | Backlog | TASK-012 |
 | TASK-014 | QA core feature | QA Agent | High | Backlog | TASK-013 |
@@ -56,7 +56,7 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 
 | Blocker | Owner | Needed From | Date Raised | Status |
 | --- | --- | --- | --- | --- |
-| None | None | None | 2026-07-12 | None |
+| None | None | None | 2026-07-14 | None |
 
 ## Integration Notes
 
@@ -81,6 +81,6 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 ### 2026-07-14
 
 - Completed: TASK-008 test + lint toolchain. Added the `org.jlleitschuh.gradle.ktlint` plugin (Kotlin style linter/formatter, wired into `check`/`build`), fixed 2 real style violations via `ktlintFormat`, and whitelisted `@Composable` `PascalCase` naming via `.editorconfig`. Documented `ktlintCheck`/`ktlintFormat` commands and a new Testing Conventions section in `shared-context.md`; logged the ktlint choice in `decision-log.md`. `./gradlew build` (compile + unit tests + ktlintCheck + AGP lint) verified clean.
-- In progress: TASK-009 (Frontend Agent) and TASK-010 (Backend Agent) started concurrently in the same working tree — see their task packets for current status.
+- Completed: TASK-009 base UI foundation and TASK-010 DataStore setup. TASK-009 added the responsive Compose shell, design tokens, shared primitives, and component tests. TASK-010 added typed DataStore models, repository, seed/reset helpers, and JVM repository tests. A local Temurin JDK 17 was provisioned under `~/.local/share/jdks/jdk-17.0.19+10` for verification; `./gradlew build` passes. `./gradlew connectedAndroidTest` passes on a physical Samsung SM-S731B connected over USB.
 - Blocked: None.
-- Next: TASK-011 (core feature API) is unblocked once TASK-010 completes; TASK-012 unblocks once TASK-009 and TASK-011 complete.
+- Next: TASK-011 (core feature API) is ready. TASK-012 unblocks once TASK-011 completes.
