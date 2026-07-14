@@ -3,500 +3,320 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Apple Icon · Agent Management</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>">
+<title>Apple Icon Automation</title>
 <style>
   :root {
-    --page:      #f9f9f7;
-    --surface:   #fcfcfb;
-    --ink:       #0b0b0b;
-    --ink-2:     #52514e;
-    --muted:     #898781;
-    --hairline:  #e1e0d9;
-    --border:    rgba(11,11,11,0.10);
-    --accent:    #2a78d6;   /* in progress */
-    --good:      #0ca30c;   /* complete */
-    --warning:   #fab219;   /* waiting / ready */
-    --critical:  #d03b3b;   /* blocked */
-    --good-text: #006300;
+    --page: #f7f7f4;
+    --surface: #ffffff;
+    --surface-2: #f0f4f8;
+    --ink: #111318;
+    --muted: #667085;
+    --border: #d7dde5;
+    --blue: #2563eb;
+    --green: #108a42;
+    --amber: #b76b00;
+    --red: #c2413b;
+    --violet: #6d4aff;
+    --code: #101828;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --page:      #0d0d0d;
-      --surface:   #1a1a19;
-      --ink:       #ffffff;
-      --ink-2:     #c3c2b7;
-      --muted:     #898781;
-      --hairline:  #2c2c2a;
-      --border:    rgba(255,255,255,0.10);
-      --accent:    #3987e5;
-      --good-text: #0ca30c;
+      --page: #0c0f14;
+      --surface: #151922;
+      --surface-2: #1d2430;
+      --ink: #f2f4f7;
+      --muted: #98a2b3;
+      --border: #303846;
+      --blue: #67a2ff;
+      --green: #58d68d;
+      --amber: #f2b84b;
+      --red: #ff8077;
+      --violet: #a99bff;
+      --code: #e6edf6;
     }
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: var(--page);
     color: var(--ink);
-    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 16px 64px; }
-
-  header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin-bottom: 4px; }
-  header.top h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
-  .repo-link { color: var(--ink-2); text-decoration: none; font-size: 13px; }
-  .repo-link:hover { text-decoration: underline; }
-  .sub { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
-  .sub .dot-live { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    background: var(--good); margin-right: 5px; vertical-align: baseline;
-    animation: pulse 2s ease-in-out infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
-
-  .controls { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-  button.refresh {
-    font: inherit; font-size: 13px; padding: 6px 14px; border-radius: 8px;
-    border: 1px solid var(--border); background: var(--surface); color: var(--ink); cursor: pointer;
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 22px 16px 56px; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+  h1 { margin: 0; font-size: 24px; letter-spacing: 0; }
+  .sub { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+  .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  button {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font: inherit;
+    cursor: pointer;
   }
-  button.refresh:hover { border-color: var(--muted); }
-  .meta-note { color: var(--muted); font-size: 12px; }
-
-  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
-  .tile {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    padding: 14px 16px;
+  button:hover { border-color: var(--blue); }
+  .live { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); animation: pulse 1.8s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  .grid { display: grid; gap: 14px; }
+  .tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-bottom: 14px; }
+  .two { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    min-width: 0;
   }
-  .tile .val { font-size: 28px; font-weight: 650; letter-spacing: -0.02em; }
-  .tile .lbl { font-size: 12px; color: var(--ink-2); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
-  .tile .lbl .swatch { width: 9px; height: 9px; border-radius: 3px; flex: none; }
-
-  section.card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    padding: 18px 18px 8px; margin-bottom: 20px;
-  }
-  section.card h2 { font-size: 15px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
-  section.card h2 .count { color: var(--muted); font-weight: 400; font-size: 13px; }
-
-  .scroll-x { overflow-x: auto; margin: 0 -18px; padding: 0 18px 12px; }
-  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13.5px; }
-  th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12px;
-       padding: 6px 12px 6px 0; border-bottom: 1px solid var(--hairline); white-space: nowrap; }
-  td { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--hairline); vertical-align: top; }
-  tr:last-child td { border-bottom: none; }
-  td.mono, .mono { font-variant-numeric: tabular-nums; white-space: nowrap; }
-  td .task-id { font-weight: 600; }
-
+  .card h2 { margin: 0 0 10px; font-size: 15px; }
+  .tile .label { color: var(--muted); font-size: 12px; }
+  .tile .value { font-size: 24px; font-weight: 700; margin-top: 4px; overflow-wrap: anywhere; }
+  .tile .hint { color: var(--muted); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+  .good { color: var(--green); }
+  .warn { color: var(--amber); }
+  .bad { color: var(--red); }
+  .blue { color: var(--blue); }
+  .violet { color: var(--violet); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { color: var(--muted); font-size: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); padding: 6px 8px 6px 0; white-space: nowrap; }
+  td { border-bottom: 1px solid var(--border); padding: 8px 8px 8px 0; vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  .scroll { overflow-x: auto; }
   .badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 12px; font-weight: 550; padding: 2px 9px; border-radius: 999px;
-    border: 1px solid var(--border); white-space: nowrap; color: var(--ink-2);
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 12px;
+    white-space: nowrap;
   }
-  .badge .ic { font-size: 11px; line-height: 1; }
-  .badge.complete   { color: var(--good-text); }
-  .badge.complete .ic { color: var(--good); }
-  .badge.inprogress { color: var(--accent); }
-  .badge.inprogress .ic { animation: pulse 1.6s ease-in-out infinite; }
-  .badge.blocked    { color: var(--critical); }
-  .badge.backlog    { color: var(--muted); }
-  .badge.ready      { color: var(--ink-2); }
-
-  .next-list { list-style: none; margin: 0 0 12px; padding: 0; }
-  .next-list li { padding: 8px 0; border-bottom: 1px solid var(--hairline); display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; }
-  .next-list li:last-child { border-bottom: none; }
-  .next-list .why { color: var(--muted); font-size: 12px; }
-
-  .feed { list-style: none; margin: 0 0 12px; padding: 0; }
-  .feed li { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--hairline); }
-  .feed li:last-child { border-bottom: none; }
-  .feed .when { color: var(--muted); font-size: 12px; flex: none; width: 86px; padding-top: 2px; }
-  .feed .msg { flex: 1; min-width: 0; }
-  .feed .msg .headline { display: block; overflow-wrap: anywhere; }
-  .feed .msg .by { color: var(--ink-2); font-size: 12px; }
-  .feed .branch-tag {
-    font-size: 11px; color: var(--ink-2); border: 1px solid var(--border);
-    border-radius: 999px; padding: 1px 8px; margin-left: 6px; white-space: nowrap;
+  .badge.complete { color: var(--green); }
+  .badge.backlog, .badge.ready { color: var(--muted); }
+  .badge.blocked { color: var(--red); }
+  .badge.active { color: var(--blue); border-color: var(--blue); }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+  .path, .cmd { overflow-wrap: anywhere; }
+  pre {
+    margin: 8px 0 0;
+    padding: 10px;
+    overflow: auto;
+    max-height: 360px;
+    color: var(--code);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    white-space: pre-wrap;
   }
-  .feed a.sha { color: var(--accent); text-decoration: none; font-size: 12px; }
-  .feed a.sha:hover { text-decoration: underline; }
-
-  .banner {
-    border: 1px solid var(--border); border-left: 3px solid var(--critical);
-    background: var(--surface); border-radius: 8px; padding: 10px 14px;
-    font-size: 13px; margin-bottom: 20px; display: none;
+  .log-card { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+  .log-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+  .summary { color: var(--muted); margin-top: 5px; overflow-wrap: anywhere; }
+  .list { margin: 0; padding-left: 18px; }
+  .list li { margin: 4px 0; overflow-wrap: anywhere; }
+  .empty { color: var(--muted); font-style: italic; }
+  .err { border-color: var(--red); color: var(--red); display: none; margin-bottom: 14px; }
+  .err.show { display: block; }
+  @media (max-width: 900px) {
+    header { align-items: flex-start; flex-direction: column; }
+    .tiles, .two { grid-template-columns: 1fr; }
   }
-  .banner.show { display: block; }
-
-  footer { color: var(--muted); font-size: 12px; margin-top: 28px; }
-  footer a { color: var(--ink-2); }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
-    <h1>Agent Management</h1>
-    <a class="repo-link" href="https://github.com/Angel16989/Airpods" target="_blank" rel="noopener">Angel16989/Airpods ↗</a>
+  <header>
+    <div>
+      <h1>Apple Icon Automation</h1>
+      <p class="sub">Live local view of workers, branches, dirty files, dispatch logs, and the task board.</p>
+    </div>
+    <div class="toolbar">
+      <span class="live"><span class="dot"></span><span id="liveText">Connecting</span></span>
+      <button id="refreshBtn" type="button">Refresh</button>
+    </div>
   </header>
-  <p class="sub" id="liveline"><span class="dot-live"></span>Connecting to repository…</p>
 
-  <div class="controls">
-    <button class="refresh" id="refreshBtn">Refresh now</button>
-    <span class="meta-note" id="metaNote"></span>
-  </div>
+  <div class="card err" id="errorBox"></div>
 
-  <div class="banner" id="errBanner"></div>
+  <section class="grid tiles" id="tiles"></section>
 
-  <div class="tiles" id="tiles"></div>
-
-  <section class="card">
-    <h2>Active agents <span class="count" id="agentCount"></span></h2>
-    <div class="scroll-x"><table id="agentsTable">
-      <thead><tr><th>Agent</th><th>Role</th><th>Current task</th><th>Status</th><th>Last update</th><th>Blockers</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
+  <section class="grid two">
+    <div class="card">
+      <h2>Running Processes</h2>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Role</th><th>PID</th><th>Task</th><th>Status</th><th>Command</th></tr></thead>
+          <tbody id="processRows"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Git State</h2>
+      <div id="gitState"></div>
+    </div>
   </section>
 
-  <section class="card">
-    <h2>Next up <span class="count">unblocked, not started</span></h2>
-    <ul class="next-list" id="nextList"></ul>
+  <section class="card" style="margin-top:14px">
+    <h2>Task Queue</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Task</th><th>Feature</th><th>Owner</th><th>Priority</th><th>Status</th><th>Depends on</th></tr></thead>
+        <tbody id="taskRows"></tbody>
+      </table>
+    </div>
   </section>
 
-  <section class="card">
-    <h2>Task queue <span class="count" id="taskCount"></span></h2>
-    <div class="scroll-x"><table id="tasksTable">
-      <thead><tr><th>Task</th><th>Feature</th><th>Owner</th><th>Priority</th><th>Status</th><th>Depends on</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
+  <section class="grid two" style="margin-top:14px">
+    <div class="card">
+      <h2>Latest Dispatch Logs</h2>
+      <div id="logs"></div>
+    </div>
+    <div class="card">
+      <h2>Recent Commits</h2>
+      <ul class="list mono" id="commits"></ul>
+      <h2 style="margin-top:16px">Next Eligible</h2>
+      <ul class="list" id="nextTasks"></ul>
+    </div>
   </section>
-
-  <section class="card">
-    <h2>Live repo activity <span class="count" id="feedCount"></span></h2>
-    <ul class="feed" id="feed"></ul>
-  </section>
-
-  <footer>
-    Every number on this page is fetched live from
-    <a href="https://github.com/Angel16989/Airpods" target="_blank" rel="noopener">github.com/Angel16989/Airpods</a>
-    via the GitHub API (task board parsed from
-    <span class="mono">project-docs/agent-workspace.md</span> on <span class="mono">develop</span>) — nothing is mocked.
-    Data is only as current as what has been committed and pushed.
-  </footer>
 </div>
 
 <script>
 "use strict";
 
-const OWNER = "Angel16989";
-const REPO = "Airpods";
-const BOARD_BRANCH = "develop";
-const FEED_BRANCHES = ["develop", "main"];
-const REFRESH_MS = 180000; // 3 min — stays well inside 60 unauthenticated API calls/hour
-
+const POLL_MS = 5000;
 const $ = (id) => document.getElementById(id);
-
-const STATUS_STYLES = {
-  complete:     { cls: "complete",   ic: "✔", label: "Complete" },
-  "in progress":{ cls: "inprogress", ic: "●", label: "In progress" },
-  blocked:      { cls: "blocked",    ic: "⊘", label: "Blocked" },
-  backlog:      { cls: "backlog",    ic: "○", label: "Backlog" },
-  ready:        { cls: "ready",      ic: "◇", label: "Ready" },
-  review:       { cls: "inprogress", ic: "◈", label: "Review" },
-  paused:       { cls: "backlog",    ic: "⏸", label: "Paused" },
-  shipped:      { cls: "complete",   ic: "✔", label: "Shipped" },
-  idle:         { cls: "backlog",    ic: "○", label: "Idle" },
-};
-
-function badge(statusRaw) {
-  const key = (statusRaw || "").trim().toLowerCase();
-  const s = STATUS_STYLES[key] || { cls: "backlog", ic: "·", label: statusRaw || "—" };
-  const el = document.createElement("span");
-  el.className = "badge " + s.cls;
-  const ic = document.createElement("span");
-  ic.className = "ic";
-  ic.textContent = s.ic;
-  el.append(ic, document.createTextNode(s.label));
-  return el;
-}
+const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+}[ch]));
 
 function relTime(iso) {
-  const secs = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
-  if (secs < 60) return "just now";
-  const m = Math.round(secs / 60);
-  if (m < 60) return m + " min ago";
-  const h = Math.round(m / 60);
-  if (h < 24) return h + " h ago";
-  return Math.round(h / 24) + " d ago";
+  const ms = Date.now() - Date.parse(iso);
+  if (!Number.isFinite(ms)) return "";
+  const sec = Math.max(0, Math.round(ms / 1000));
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.round(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.round(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  return `${Math.round(hr / 24)}d ago`;
 }
 
-/* ---------- markdown table parsing (board is the source of truth) ---------- */
-
-function sectionLines(md, heading) {
-  const re = new RegExp("^##\\s+" + heading + "\\s*$", "mi");
-  const m = re.exec(md);
-  if (!m) return [];
-  const rest = md.slice(m.index + m[0].length);
-  const next = rest.search(/^##\s+/m);
-  return (next === -1 ? rest : rest.slice(0, next)).split("\n");
+function badge(status, active = false) {
+  const key = String(status || "").toLowerCase();
+  const cls = active ? "active" : key.includes("complete") ? "complete" :
+    key.includes("blocked") ? "blocked" :
+    key.includes("progress") ? "active" : "backlog";
+  return `<span class="badge ${cls}">${esc(status || "Unknown")}</span>`;
 }
 
-function parseTable(lines) {
-  const rows = [];
-  for (const line of lines) {
-    const t = line.trim();
-    if (!t.startsWith("|")) continue;
-    const cells = t.split("|").slice(1, -1).map((c) => c.trim());
-    if (cells.length && !cells.every((c) => /^:?-{3,}:?$/.test(c))) rows.push(cells);
-  }
-  return rows.length ? { header: rows[0], rows: rows.slice(1) } : null;
+function renderTiles(data) {
+  const workers = data.processes.filter((p) => p.role.includes("worker")).length;
+  const gradle = data.processes.filter((p) => p.role === "gradle").length;
+  const next = data.board.next[0];
+  $("tiles").innerHTML = [
+    tile("Branch", data.branch, data.head, "blue"),
+    tile("Dirty files", data.dirtyCount, data.dirtyCount ? "work in progress" : "clean", data.dirtyCount ? "warn" : "good"),
+    tile("Workers", workers, gradle ? `${gradle} Gradle job(s)` : "no Gradle job", workers ? "blue" : "warn"),
+    tile("Active task", data.workerTasks.join(", ") || "None", "detected from processes", data.workerTasks.length ? "violet" : "warn"),
+    tile("Next up", next ? next["Task ID"] : "None", next ? next.Feature : "no eligible task", "blue"),
+  ].join("");
 }
 
-/* ------------------------------- fetching -------------------------------- */
-
-let rateRemaining = null;
-
-async function apiGet(path) {
-  const res = await fetch("https://api.github.com" + path, {
-    headers: { Accept: "application/vnd.github+json" },
-  });
-  const rem = res.headers.get("x-ratelimit-remaining");
-  if (rem !== null) rateRemaining = rem;
-  if (!res.ok) throw new Error("GitHub API " + res.status + " on " + path);
-  return res.json();
+function tile(label, value, hint, cls) {
+  return `<div class="card tile"><div class="label">${esc(label)}</div><div class="value ${cls || ""}">${esc(value)}</div><div class="hint">${esc(hint || "")}</div></div>`;
 }
 
-async function fetchBoard() {
-  // Contents API, not raw.githubusercontent: the raw CDN caches for ~5 min
-  // and ignores cache-busting, but the API always serves the latest commit.
-  const res = await fetch("https://api.github.com/repos/" + OWNER + "/" + REPO +
-    "/contents/project-docs/agent-workspace.md?ref=" + BOARD_BRANCH, {
-    headers: { Accept: "application/vnd.github.raw+json" },
-    cache: "no-store",
-  });
-  const rem = res.headers.get("x-ratelimit-remaining");
-  if (rem !== null) rateRemaining = rem;
-  if (!res.ok) throw new Error("Board fetch failed (" + res.status + ")");
-  return res.text();
+function renderProcesses(data) {
+  const rows = data.processes;
+  $("processRows").innerHTML = rows.length ? rows.map((p) => `
+    <tr>
+      <td>${esc(p.role)}</td>
+      <td class="mono">${esc(p.pid)}</td>
+      <td>${p.task ? badge(p.task, true) : "<span class='empty'>none</span>"}</td>
+      <td class="mono">${esc(p.stat)}</td>
+      <td class="mono cmd">${esc(p.command)}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="5" class="empty">No automation processes found.</td></tr>`;
 }
 
-// Secondary branches change rarely — fetched once per page load, then reused,
-// to stay well inside the unauthenticated API budget.
-const secondaryCache = new Map();
-
-async function fetchCommits() {
-  const bySha = new Map();
-  for (const [i, branch] of FEED_BRANCHES.entries()) {
-    try {
-      let commits;
-      if (i > 0 && secondaryCache.has(branch)) {
-        commits = secondaryCache.get(branch);
-      } else {
-        commits = await apiGet("/repos/" + OWNER + "/" + REPO +
-          "/commits?sha=" + branch + "&per_page=20");
-        if (i > 0) secondaryCache.set(branch, commits);
-      }
-      for (const c of commits) {
-        if (bySha.has(c.sha)) bySha.get(c.sha).branches.push(branch);
-        else bySha.set(c.sha, { c, branches: [branch] });
-      }
-    } catch (e) { /* one missing branch shouldn't kill the feed */ }
-  }
-  return [...bySha.values()].sort((a, b) =>
-    new Date(b.c.commit.committer.date) - new Date(a.c.commit.committer.date));
+function renderGit(data) {
+  const dirty = data.dirty.length ? `<ul class="list mono">${data.dirty.map((line) => `<li>${esc(line)}</li>`).join("")}</ul>` : "<p class='empty'>Worktree clean.</p>";
+  $("gitState").innerHTML = `
+    <p><strong>Repo:</strong> <span class="mono path">${esc(data.repo)}</span></p>
+    <p><strong>Status:</strong></p>
+    <pre>${esc(data.status.join("\n") || "No git status output.")}</pre>
+    <p><strong>Changed files:</strong></p>
+    ${dirty}
+  `;
 }
 
-/* ------------------------------- rendering ------------------------------- */
-
-function renderTiles(tasks) {
-  const count = (st) => tasks.filter((t) => (t.status || "").toLowerCase() === st).length;
-  const spec = [
-    { label: "Total tasks", val: tasks.length, color: null },
-    { label: "Complete", val: count("complete") + count("shipped"), color: "var(--good)" },
-    { label: "In progress", val: count("in progress") + count("review"), color: "var(--accent)" },
-    { label: "Blocked", val: count("blocked"), color: "var(--critical)" },
-    { label: "Backlog", val: count("backlog") + count("ready"), color: "var(--muted)" },
-  ];
-  $("tiles").replaceChildren(...spec.map((s) => {
-    const tile = document.createElement("div");
-    tile.className = "tile";
-    const val = document.createElement("div");
-    val.className = "val";
-    val.textContent = s.val;
-    const lbl = document.createElement("div");
-    lbl.className = "lbl";
-    if (s.color) {
-      const sw = document.createElement("span");
-      sw.className = "swatch";
-      sw.style.background = s.color;
-      lbl.append(sw);
-    }
-    lbl.append(document.createTextNode(s.label));
-    tile.append(val, lbl);
-    return tile;
-  }));
+function renderTasks(data) {
+  const active = new Set(data.workerTasks);
+  $("taskRows").innerHTML = data.board.tasks.map((task) => {
+    const id = task["Task ID"];
+    return `
+      <tr>
+        <td class="mono">${active.has(id) ? badge(id, true) : esc(id)}</td>
+        <td>${esc(task.Feature)}</td>
+        <td>${esc(task.Owner)}</td>
+        <td>${esc(task.Priority)}</td>
+        <td>${badge(task.Status, active.has(id))}</td>
+        <td>${esc(task["Depends On"])}</td>
+      </tr>
+    `;
+  }).join("");
 }
 
-function renderAgents(agents) {
-  $("agentCount").textContent = agents.length ? agents.length + " on the board" : "";
-  const tbody = $("agentsTable").tBodies[0];
-  tbody.replaceChildren(...agents.map((a) => {
-    const tr = document.createElement("tr");
-    for (const [i, cell] of a.entries()) {
-      const td = document.createElement("td");
-      if (i === 3) td.append(badge(cell));
-      else td.textContent = cell;
-      if (i === 4) td.classList.add("mono");
-      tr.append(td);
-    }
-    return tr;
-  }));
+function renderLogs(data) {
+  $("logs").innerHTML = data.logs.length ? data.logs.slice(0, 5).map((log) => `
+    <div class="log-card">
+      <div class="log-head">
+        <strong>${esc(log.name)}</strong>
+        <span class="mono">${esc(relTime(log.modifiedAt))}</span>
+      </div>
+      <div class="summary">${esc(log.summary || "No summary line yet.")}</div>
+      <pre>${esc(log.tail.join("\n"))}</pre>
+    </div>
+  `).join("") : "<p class='empty'>No dispatch logs yet.</p>";
 }
 
-function renderTasks(tasks) {
-  $("taskCount").textContent = tasks.length + " tasks";
-  const tbody = $("tasksTable").tBodies[0];
-  tbody.replaceChildren(...tasks.map((t) => {
-    const tr = document.createElement("tr");
-    const cells = [t.id, t.feature, t.owner, t.priority, null, t.deps];
-    cells.forEach((val, i) => {
-      const td = document.createElement("td");
-      if (i === 0) { td.classList.add("mono"); const b = document.createElement("span"); b.className = "task-id"; b.textContent = val; td.append(b); }
-      else if (i === 4) td.append(badge(t.status));
-      else td.textContent = val;
-      tr.append(td);
-    });
-    return tr;
-  }));
+function renderSidebar(data) {
+  $("commits").innerHTML = data.recentCommits.length ? data.recentCommits.map((line) => `<li>${esc(line)}</li>`).join("") : "<li class='empty'>No commits found.</li>";
+  $("nextTasks").innerHTML = data.board.next.length ? data.board.next.map((task) => `<li><span class="mono">${esc(task["Task ID"])}</span> ${esc(task.Feature)} <span class="empty">(${esc(task.Owner)})</span></li>`).join("") : "<li class='empty'>No eligible task.</li>";
 }
 
-function computeNextUp(tasks) {
-  const done = new Set(tasks
-    .filter((t) => ["complete", "shipped"].includes((t.status || "").toLowerCase()))
-    .map((t) => t.id));
-  return tasks.filter((t) => {
-    const st = (t.status || "").toLowerCase();
-    if (st !== "backlog" && st !== "ready") return false;
-    const deps = t.deps || "";
-    if (/user input/i.test(deps)) return false;
-    const ids = deps.match(/TASK-\d+/g) || [];
-    return ids.every((id) => done.has(id));
-  });
+function render(data) {
+  $("errorBox").classList.remove("show");
+  $("liveText").textContent = `Updated ${relTime(data.generatedAt)}`;
+  renderTiles(data);
+  renderProcesses(data);
+  renderGit(data);
+  renderTasks(data);
+  renderLogs(data);
+  renderSidebar(data);
 }
-
-function renderNextUp(next) {
-  const list = $("nextList");
-  if (!next.length) {
-    const li = document.createElement("li");
-    li.innerHTML = '<span class="why">Nothing is unblocked right now — the queue is waiting on running or blocked tasks.</span>';
-    list.replaceChildren(li);
-    return;
-  }
-  list.replaceChildren(...next.map((t) => {
-    const li = document.createElement("li");
-    const id = document.createElement("span");
-    id.className = "mono task-id";
-    id.textContent = t.id;
-    const name = document.createElement("span");
-    name.textContent = t.feature;
-    const why = document.createElement("span");
-    why.className = "why";
-    why.textContent = t.owner && t.owner !== "Unassigned"
-      ? "suggested owner: " + t.owner : "unassigned — free for any agent";
-    li.append(id, name, why);
-    return li;
-  }));
-}
-
-function renderFeed(entries) {
-  $("feedCount").textContent = entries.length + " recent commits";
-  $("feed").replaceChildren(...entries.slice(0, 25).map(({ c, branches }) => {
-    const li = document.createElement("li");
-    const when = document.createElement("span");
-    when.className = "when";
-    when.textContent = relTime(c.commit.committer.date);
-
-    const msg = document.createElement("span");
-    msg.className = "msg";
-    const headline = document.createElement("span");
-    headline.className = "headline";
-    headline.textContent = c.commit.message.split("\n")[0];
-    for (const b of branches) {
-      const tag = document.createElement("span");
-      tag.className = "branch-tag";
-      tag.textContent = b;
-      headline.append(tag);
-    }
-    const by = document.createElement("span");
-    by.className = "by";
-    by.append(document.createTextNode((c.commit.author.name || "unknown") + " · "));
-    const sha = document.createElement("a");
-    sha.className = "sha mono";
-    sha.href = c.html_url;
-    sha.target = "_blank";
-    sha.rel = "noopener";
-    sha.textContent = c.sha.slice(0, 7);
-    by.append(sha);
-    msg.append(headline, by);
-    li.append(when, msg);
-    return li;
-  }));
-}
-
-function renderLiveline(entries, agents) {
-  const latest = entries[0];
-  const line = $("liveline");
-  if (!latest) { line.textContent = "No activity found."; return; }
-  const ageMin = (Date.now() - new Date(latest.c.commit.committer.date)) / 60000;
-  const working = agents.filter((a) => (a[3] || "").toLowerCase() === "in progress").length;
-  const parts = [];
-  parts.push(ageMin < 20
-    ? "Repo is LIVE — last push " + relTime(latest.c.commit.committer.date)
-    : "Last push " + relTime(latest.c.commit.committer.date));
-  if (working > 0) parts.push(working + " agent" + (working > 1 ? "s" : "") + " marked in progress");
-  line.replaceChildren();
-  const dot = document.createElement("span");
-  dot.className = "dot-live";
-  if (ageMin >= 20) dot.style.background = "var(--muted)";
-  line.append(dot, document.createTextNode(parts.join(" · ")));
-}
-
-/* --------------------------------- main ---------------------------------- */
 
 async function refresh() {
-  const btn = $("refreshBtn");
-  btn.disabled = true;
-  $("errBanner").classList.remove("show");
   try {
-    const [boardMd, feed] = await Promise.all([fetchBoard(), fetchCommits()]);
-
-    const queueTable = parseTable(sectionLines(boardMd, "Task Queue"));
-    const tasks = (queueTable ? queueTable.rows : []).map((r) => ({
-      id: r[0] || "", feature: r[1] || "", owner: r[2] || "",
-      priority: r[3] || "", status: r[4] || "", deps: r[5] || "",
-    }));
-    const agentsTable = parseTable(sectionLines(boardMd, "Active Agents"));
-    const agents = agentsTable ? agentsTable.rows.map((r) => r.slice(0, 6)) : [];
-
-    renderTiles(tasks);
-    renderAgents(agents);
-    renderTasks(tasks);
-    renderNextUp(computeNextUp(tasks));
-    renderFeed(feed);
-    renderLiveline(feed, agents);
-
-    $("metaNote").textContent = "Updated " + new Date().toLocaleTimeString() +
-      " · auto-refreshes every 3 min" +
-      (rateRemaining !== null ? " · GitHub API budget left this hour: " + rateRemaining : "");
+    const res = await fetch(`/api/status?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    render(await res.json());
   } catch (err) {
-    const banner = $("errBanner");
-    banner.textContent = "Could not load live data: " + err.message +
-      " — will retry on the next cycle. (GitHub's unauthenticated API allows 60 requests/hour per IP.)";
-    banner.classList.add("show");
-  } finally {
-    btn.disabled = false;
+    $("liveText").textContent = "Disconnected";
+    $("errorBox").textContent = `Dashboard API error: ${err.message}`;
+    $("errorBox").classList.add("show");
   }
 }
 
 $("refreshBtn").addEventListener("click", refresh);
 refresh();
-setInterval(refresh, REFRESH_MS);
+setInterval(refresh, POLL_MS);
 </script>
 </body>
 </html>
