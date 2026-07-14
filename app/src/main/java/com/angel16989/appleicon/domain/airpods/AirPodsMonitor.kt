@@ -5,6 +5,7 @@ import com.angel16989.appleicon.data.model.AirPodsBatterySnapshot
 import com.angel16989.appleicon.data.model.AirPodsBluetoothPayload
 import com.angel16989.appleicon.data.model.AirPodsConnectionState
 import com.angel16989.appleicon.data.model.AirPodsErrorEnvelope
+import com.angel16989.appleicon.data.model.AirPodsMonitorErrorCode
 import com.angel16989.appleicon.data.model.AirPodsMonitorPermissions
 import com.angel16989.appleicon.data.model.AirPodsMonitorRequest
 import com.angel16989.appleicon.data.model.AirPodsMonitorResult
@@ -26,6 +27,7 @@ class AirPodsMonitor(
     private val repository: AirPodsPreferencesRepository,
     private val signalSource: AirPodsSignalSource = AirPodsSignalSource { emptyFlow() },
     private val parser: AirPodsPayloadParser = AirPodsPayloadParser(),
+    private val debugEventLogger: AirPodsDebugEventLogger = NoOpAirPodsDebugEventLogger,
     private val now: () -> OffsetDateTime = { OffsetDateTime.now() },
 ) {
     fun observeSnapshots(
@@ -41,13 +43,14 @@ class AirPodsMonitor(
 
             val gateError = gateError(permissions, now().toString())
             if (gateError != null) {
+                logPermissionBlocked(gateError)
                 emit(AirPodsMonitorResult.Failure(gateError))
                 return@flow
             }
 
             val cachedSnapshot = repository.snapshot.first()
             if (cachedSnapshot != null) {
-                emit(
+                val result =
                     cachedSnapshot
                         .withStaleState(request)
                         .toMonitorResult(
@@ -56,8 +59,9 @@ class AirPodsMonitor(
                             permissions = permissions,
                             previousSnapshot = cachedSnapshot,
                             batteryUnavailable = cachedSnapshot.hasNoBatteryValues(),
-                        ),
-                )
+                        )
+                logPopupShown(result, request, settings, permissions)
+                emit(result)
             }
 
             signalSource.observeSignals(request.scanReason).collect { payload ->
@@ -66,21 +70,28 @@ class AirPodsMonitor(
                         emit(AirPodsMonitorResult.Failure(parsed.error))
 
                     is AirPodsPayloadParseResult.Success -> {
+                        debugEventLogger.log(
+                            AirPodsDebugEvent.airPodsDetected(
+                                snapshot = parsed.snapshot,
+                                occurredAt = now().toString(),
+                            ),
+                        )
                         val previousSnapshot = repository.snapshot.first()
                         val snapshot =
                             parsed.snapshot
                                 .carryForwardPopupCooldown(previousSnapshot)
                                 .withStaleState(request)
                         repository.saveSnapshot(snapshot)
-                        emit(
+                        val result =
                             snapshot.toMonitorResult(
                                 request = request,
                                 settings = settings,
                                 permissions = permissions,
                                 previousSnapshot = previousSnapshot,
                                 batteryUnavailable = parsed.batteryUnavailable,
-                            ),
-                        )
+                            )
+                        logPopupShown(result, request, settings, permissions)
+                        emit(result)
                     }
                 }
             }
@@ -120,12 +131,20 @@ class AirPodsMonitor(
         val fallbackErrors =
             buildList {
                 if (overlayUnavailable(request, settings, permissions)) {
+                    val notificationAvailable =
+                        settings.notificationEnabled &&
+                            permissions.notificationPermissionGranted
                     add(
                         AirPodsMonitorErrors.overlayUnavailable(
                             occurredAt = occurredAt,
-                            notificationAvailable =
-                                settings.notificationEnabled &&
-                                    permissions.notificationPermissionGranted,
+                            notificationAvailable = notificationAvailable,
+                        ),
+                    )
+                    debugEventLogger.log(
+                        AirPodsDebugEvent.popupFallbackUsed(
+                            reason = "overlay_unavailable",
+                            notificationAvailable = notificationAvailable,
+                            occurredAt = occurredAt,
                         ),
                     )
                 }
@@ -213,5 +232,37 @@ class AirPodsMonitor(
                 AirPodsConnectionState.DETECTED,
                 AirPodsConnectionState.CONNECTED,
             )
+    }
+
+    private fun logPermissionBlocked(gateError: AirPodsErrorEnvelope) {
+        if (gateError.error.code == AirPodsMonitorErrorCode.BLUETOOTH_PERMISSION_DENIED) {
+            debugEventLogger.log(
+                AirPodsDebugEvent.permissionBlocked(
+                    permissionType = "bluetooth",
+                    occurredAt = gateError.occurredAt,
+                ),
+            )
+        }
+    }
+
+    private fun logPopupShown(
+        result: AirPodsMonitorResult.Snapshot,
+        request: AirPodsMonitorRequest,
+        settings: AirPodsSettings,
+        permissions: AirPodsMonitorPermissions,
+    ) {
+        if (!result.popupShouldShow) {
+            return
+        }
+        debugEventLogger.log(
+            AirPodsDebugEvent.batteryPopupShown(
+                snapshot = result.snapshot,
+                overlayEnabled =
+                    request.overlayEnabled &&
+                        settings.overlayEnabled &&
+                        permissions.overlayPermissionGranted,
+                occurredAt = now().toString(),
+            ),
+        )
     }
 }

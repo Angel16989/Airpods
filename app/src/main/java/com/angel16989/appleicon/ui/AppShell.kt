@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -34,6 +35,8 @@ import com.angel16989.appleicon.data.model.AirPodsNotificationState
 import com.angel16989.appleicon.data.model.AirPodsScanReason
 import com.angel16989.appleicon.data.model.AirPodsSettings
 import com.angel16989.appleicon.data.model.AirPodsSnapshotSource
+import com.angel16989.appleicon.domain.airpods.AirPodsDebugEvent
+import com.angel16989.appleicon.domain.airpods.AirPodsDebugEventLogger
 import com.angel16989.appleicon.domain.airpods.AirPodsMonitor
 import com.angel16989.appleicon.domain.airpods.AirPodsSignalSource
 import com.angel16989.appleicon.ui.airpods.AirPodsDashboardActions
@@ -62,6 +65,7 @@ fun AppleIconApp(modifier: Modifier = Modifier) {
             AirPodsMonitor(
                 repository = repository,
                 signalSource = AirPodsSignalSource { manualSignals.receiveAsFlow() },
+                debugEventLogger = LogcatAirPodsDebugEventLogger,
             )
         }
     val scope = rememberCoroutineScope()
@@ -272,3 +276,12 @@ private fun manualTestPayload(): AirPodsBluetoothPayload =
         source = AirPodsSnapshotSource.MANUAL_TEST,
         observedAt = OffsetDateTime.now().toString(),
     )
+
+private object LogcatAirPodsDebugEventLogger : AirPodsDebugEventLogger {
+    override fun log(event: AirPodsDebugEvent) {
+        Log.d(
+            "AppleIconAirPods",
+            "${event.name.serializedName} ${event.properties.toSortedMap()} at ${event.occurredAt}",
+        )
+    }
+}

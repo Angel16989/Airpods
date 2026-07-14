@@ -62,6 +62,110 @@ class AirPodsDashboardMapperTest {
     }
 
     @Test
+    fun mapsEverySpecErrorCaseToUserMessageAndRecoveryAction() {
+        val cases =
+            listOf(
+                ErrorUiCase(
+                    code = AirPodsMonitorErrorCode.BLUETOOTH_OFF,
+                    message = "Turn on Bluetooth to detect your AirPods.",
+                    title = "Bluetooth is off",
+                    actionLabel = "Open Bluetooth",
+                    action = AirPodsPermissionAction.OPEN_BLUETOOTH_SETTINGS,
+                    fallback = false,
+                ),
+                ErrorUiCase(
+                    code = AirPodsMonitorErrorCode.BLUETOOTH_PERMISSION_DENIED,
+                    message = "Apple Icon needs Bluetooth permission to detect AirPods.",
+                    title = "Bluetooth permission needed",
+                    actionLabel = "Grant Bluetooth",
+                    action = AirPodsPermissionAction.REQUEST_BLUETOOTH_PERMISSION,
+                    fallback = false,
+                ),
+                ErrorUiCase(
+                    code = AirPodsMonitorErrorCode.OVERLAY_UNAVAILABLE,
+                    message = "Popup permission is off, so battery status will appear inside the app.",
+                    title = "Popup fallback active",
+                    actionLabel = "Open Popup Settings",
+                    action = AirPodsPermissionAction.OPEN_OVERLAY_SETTINGS,
+                    fallback = true,
+                ),
+                ErrorUiCase(
+                    code = AirPodsMonitorErrorCode.BATTERY_UNAVAILABLE,
+                    message = "AirPods detected, but battery level is unavailable right now.",
+                    title = "Battery unavailable",
+                    actionLabel = "Retry scan",
+                    action = AirPodsPermissionAction.RETRY_SCAN,
+                    fallback = true,
+                ),
+                ErrorUiCase(
+                    code = AirPodsMonitorErrorCode.STALE_DATA,
+                    message = "Showing last known battery from earlier.",
+                    title = "Last known battery",
+                    actionLabel = "Retry scan",
+                    action = AirPodsPermissionAction.RETRY_SCAN,
+                    fallback = true,
+                ),
+                ErrorUiCase(
+                    code = AirPodsMonitorErrorCode.SCAN_THROTTLED,
+                    message = "Waiting for Android to allow the next scan.",
+                    title = "Scan waiting",
+                    actionLabel = "Retry",
+                    action = AirPodsPermissionAction.RETRY_SCAN,
+                    fallback = false,
+                ),
+            )
+
+        cases.forEach { errorCase ->
+            val monitorResult: AirPodsMonitorResult =
+                if (errorCase.fallback) {
+                    AirPodsMonitorResult.Snapshot(
+                        snapshot = snapshot(rightBatteryPercent = null),
+                        popupShouldShow = false,
+                        fallbackErrors =
+                            listOf(
+                                errorEnvelope(
+                                    code = errorCase.code,
+                                    message = errorCase.message,
+                                ),
+                            ),
+                    )
+                } else {
+                    AirPodsMonitorResult.Failure(
+                        error =
+                            errorEnvelope(
+                                code = errorCase.code,
+                                message = errorCase.message,
+                            ),
+                    )
+                }
+
+            val state =
+                mapAirPodsDashboardUiState(
+                    localState = localState(snapshot = snapshot(rightBatteryPercent = null)),
+                    monitorResult = monitorResult,
+                    runtimePermissions = grantedRuntimePermissions(),
+                    isScanning = false,
+                    popupResult = null,
+                )
+            val issue =
+                if (errorCase.fallback) {
+                    state.fallbackIssues.single()
+                } else {
+                    requireNotNull(state.primaryIssue)
+                }
+
+            assertEquals(errorCase.title, issue.title)
+            assertEquals(errorCase.message, issue.message)
+            assertEquals(errorCase.actionLabel, issue.actionLabel)
+            assertEquals(errorCase.action, issue.action)
+            assertEquals(
+                if (errorCase.fallback) AirPodsDashboardMode.SUCCESS else AirPodsDashboardMode.ERROR,
+                state.mode,
+            )
+        }
+    }
+
+    @Test
     fun mapsSnapshotUnknownBatteryFallbackAndPopupState() {
         val snapshotResult =
             AirPodsMonitorResult.Snapshot(
@@ -145,4 +249,13 @@ class AirPodsDashboardMapperTest {
                 ),
             occurredAt = "2026-07-14T09:00:00+10:00",
         )
+
+    private data class ErrorUiCase(
+        val code: AirPodsMonitorErrorCode,
+        val message: String,
+        val title: String,
+        val actionLabel: String,
+        val action: AirPodsPermissionAction,
+        val fallback: Boolean,
+    )
 }

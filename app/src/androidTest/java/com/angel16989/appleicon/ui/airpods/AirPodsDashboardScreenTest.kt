@@ -76,6 +76,53 @@ class AirPodsDashboardScreenTest {
     }
 
     @Test
+    fun fallbackIssuesShowSpecMessagesAndRecoveryActions() {
+        composeRule.setContent {
+            AppleIconTheme {
+                AirPodsDashboardScreen(
+                    state =
+                        baseState(
+                            mode = AirPodsDashboardMode.SUCCESS,
+                            snapshot = snapshotUi(),
+                            fallbackIssues =
+                                listOf(
+                                    AirPodsIssueUi(
+                                        title = "Popup fallback active",
+                                        message = "Popup permission is off, so battery status will appear inside the app.",
+                                        actionLabel = "Open Popup Settings",
+                                        action = AirPodsPermissionAction.OPEN_OVERLAY_SETTINGS,
+                                    ),
+                                    AirPodsIssueUi(
+                                        title = "Battery unavailable",
+                                        message = "AirPods detected, but battery level is unavailable right now.",
+                                        actionLabel = "Retry scan",
+                                        action = AirPodsPermissionAction.RETRY_SCAN,
+                                    ),
+                                    AirPodsIssueUi(
+                                        title = "Last known battery",
+                                        message = "Showing last known battery from earlier.",
+                                        actionLabel = "Retry scan",
+                                        action = AirPodsPermissionAction.RETRY_SCAN,
+                                    ),
+                                ),
+                        ),
+                    actions = AirPodsDashboardActions(),
+                )
+            }
+        }
+
+        composeRule
+            .onNodeWithText("Popup permission is off, so battery status will appear inside the app.")
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithText("AirPods detected, but battery level is unavailable right now.")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Showing last known battery from earlier.").assertIsDisplayed()
+        composeRule.onNodeWithText("Open Popup Settings").assertIsDisplayed()
+        composeRule.onAllNodesWithText("Retry scan").assertCountEquals(2)
+    }
+
+    @Test
     fun successStateShowsSnapshotAndPopup() {
         val snapshot = snapshotUi()
         composeRule.setContent {
@@ -105,6 +152,7 @@ class AirPodsDashboardScreenTest {
         isScanning: Boolean = false,
         snapshot: AirPodsSnapshotUi? = null,
         primaryIssue: AirPodsIssueUi? = null,
+        fallbackIssues: List<AirPodsIssueUi> = emptyList(),
         popup: AirPodsPopupUi? = null,
     ): AirPodsDashboardUiState =
         AirPodsDashboardUiState(
@@ -143,7 +191,7 @@ class AirPodsDashboardScreenTest {
                 ),
             snapshot = snapshot,
             primaryIssue = primaryIssue,
-            fallbackIssues = emptyList(),
+            fallbackIssues = fallbackIssues,
             popup = popup,
         )
 

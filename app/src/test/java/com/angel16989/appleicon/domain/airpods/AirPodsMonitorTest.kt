@@ -49,6 +49,7 @@ class AirPodsMonitorTest {
     @Test
     fun observeSnapshotsSavesSignalPayloadAndEmitsSnapshot() =
         withRepository { repository ->
+            val debugEventLogger = RecordingAirPodsDebugEventLogger()
             val payload =
                 AirPodsBluetoothPayload(
                     bluetoothIdentity = "connected-case-one",
@@ -65,6 +66,7 @@ class AirPodsMonitorTest {
                 monitor(
                     repository = repository,
                     signals = AirPodsSignalSource { flowOf(payload) },
+                    debugEventLogger = debugEventLogger,
                     now = "2026-07-14T09:00:05+10:00",
                 ).observeSnapshots(AirPodsMonitorRequest(), grantedPermissions)
                     .first() as AirPodsMonitorResult.Snapshot
@@ -74,13 +76,24 @@ class AirPodsMonitorTest {
             assertEquals(72, storedSnapshot?.leftBatteryPercent)
             assertEquals(91, storedSnapshot?.caseBatteryPercent)
             assertTrue(result.popupShouldShow)
+            assertEquals(
+                listOf(
+                    AirPodsDebugEventName.AIRPODS_DETECTED,
+                    AirPodsDebugEventName.BATTERY_POPUP_SHOWN,
+                ),
+                debugEventLogger.events.map(AirPodsDebugEvent::name),
+            )
+            assertEquals("airpods_pro", debugEventLogger.events.first().properties["model_hint"])
+            assertEquals("ble_advertisement", debugEventLogger.events.first().properties["source"])
+            assertEquals("true", debugEventLogger.events.first().properties["has_left"])
         }
 
     @Test
     fun bluetoothPermissionDeniedReturnsErrorEnvelope() =
         withRepository { repository ->
+            val debugEventLogger = RecordingAirPodsDebugEventLogger()
             val result =
-                monitor(repository)
+                monitor(repository, debugEventLogger = debugEventLogger)
                     .observeSnapshots(
                         request = AirPodsMonitorRequest(),
                         permissions =
@@ -92,6 +105,8 @@ class AirPodsMonitorTest {
             assertFalse(result.error.ok)
             assertEquals(AirPodsMonitorErrorCode.BLUETOOTH_PERMISSION_DENIED, result.error.error.code)
             assertEquals("open_bluetooth_permission_settings", result.error.error.userAction)
+            assertEquals(AirPodsDebugEventName.PERMISSION_BLOCKED, debugEventLogger.events.single().name)
+            assertEquals("bluetooth", debugEventLogger.events.single().properties["permission_type"])
         }
 
     @Test
@@ -131,18 +146,22 @@ class AirPodsMonitorTest {
     @Test
     fun overlayUnavailableReturnsSnapshotFallbackAndSuppressesPopup() =
         withRepository { repository ->
+            val debugEventLogger = RecordingAirPodsDebugEventLogger()
             repository.seedLocalDevelopmentData(timestamp = "2026-07-14T09:00:00+10:00")
 
             val result =
-                monitor(repository, now = "2026-07-14T09:00:05+10:00")
-                    .observeSnapshots(
-                        request = AirPodsMonitorRequest(),
-                        permissions =
-                            grantedPermissions.copy(
-                                overlayPermissionGranted = false,
-                                notificationPermissionGranted = true,
-                            ),
-                    ).first() as AirPodsMonitorResult.Snapshot
+                monitor(
+                    repository = repository,
+                    debugEventLogger = debugEventLogger,
+                    now = "2026-07-14T09:00:05+10:00",
+                ).observeSnapshots(
+                    request = AirPodsMonitorRequest(),
+                    permissions =
+                        grantedPermissions.copy(
+                            overlayPermissionGranted = false,
+                            notificationPermissionGranted = true,
+                        ),
+                ).first() as AirPodsMonitorResult.Snapshot
 
             assertFalse(result.popupShouldShow)
             assertEquals(
@@ -158,6 +177,9 @@ class AirPodsMonitorTest {
                     .error.details
                     .getValue("notification_available"),
             )
+            assertEquals(AirPodsDebugEventName.POPUP_FALLBACK_USED, debugEventLogger.events.single().name)
+            assertEquals("overlay_unavailable", debugEventLogger.events.single().properties["reason"])
+            assertEquals("true", debugEventLogger.events.single().properties["notification_available"])
         }
 
     @Test
@@ -264,12 +286,14 @@ class AirPodsMonitorTest {
     private fun monitor(
         repository: AirPodsPreferencesRepository,
         signals: AirPodsSignalSource = AirPodsSignalSource { emptyFlow() },
+        debugEventLogger: AirPodsDebugEventLogger = NoOpAirPodsDebugEventLogger,
         now: String = "2026-07-14T09:00:00+10:00",
     ): AirPodsMonitor =
         AirPodsMonitor(
             repository = repository,
             signalSource = signals,
             parser = AirPodsPayloadParser(deviceIdSalt = "test-salt"),
+            debugEventLogger = debugEventLogger,
             now = { OffsetDateTime.parse(now) },
         )
 
@@ -300,5 +324,13 @@ class AirPodsMonitorTest {
                 overlayPermissionGranted = true,
                 notificationPermissionGranted = true,
             )
+    }
+
+    private class RecordingAirPodsDebugEventLogger : AirPodsDebugEventLogger {
+        val events = mutableListOf<AirPodsDebugEvent>()
+
+        override fun log(event: AirPodsDebugEvent) {
+            events += event
+        }
     }
 }
