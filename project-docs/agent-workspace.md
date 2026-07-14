@@ -20,7 +20,7 @@
 | Frontend Agent | UI implementation | TASK-013 (Complete) | Ready | 2026-07-15 | None |
 | Backend Agent | API and data | TASK-011 (Complete) | Ready | 2026-07-14 | None |
 | Backend Agent (2) | Test/lint toolchain | TASK-008 (Complete) | Ready | 2026-07-14 | None |
-| QA Agent | Testing and verification | None | Ready | 2026-07-12 | None |
+| QA Agent | Testing and verification | TASK-014 (Complete) | Ready | 2026-07-15 | Core feature returned to In Progress; see TASK-014 QA handoff |
 
 ## Task Queue
 
@@ -41,7 +41,7 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 | TASK-011 | Core feature API | Backend Agent | High | Complete | TASK-008, TASK-010 |
 | TASK-012 | Core feature UI | Frontend Agent | High | Complete | TASK-009, TASK-011 |
 | TASK-013 | Core feature hardening | Frontend Agent | High | Complete | TASK-012 |
-| TASK-014 | QA core feature | QA Agent | High | Backlog | TASK-013 |
+| TASK-014 | QA core feature | QA Agent | High | Complete | TASK-013 |
 | TASK-015 | Second feature API | Backend Agent | Medium | Backlog | TASK-005, TASK-011 |
 | TASK-016 | Second feature UI | Frontend Agent | Medium | Backlog | TASK-009, TASK-015 |
 | TASK-017 | QA second feature | QA Agent | Medium | Backlog | TASK-016 |
@@ -56,7 +56,8 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 
 | Blocker | Owner | Needed From | Date Raised | Status |
 | --- | --- | --- | --- | --- |
-| None | None | None | 2026-07-14 | None |
+| Runtime test popup does not render a snapshot/popup after logging `airpods_detected`; dashboard remains scanning. | Frontend Agent | TASK-014 QA handoff reproduction | 2026-07-15 | Open |
+| Real AirPods BLE detection and system-overlay presentation are not wired into the runtime app. | Backend Agent / Frontend Agent | TASK-014 QA handoff reproduction | 2026-07-15 | Open |
 
 ## Integration Notes
 
@@ -90,5 +91,6 @@ Every task has a packet in `project-docs/tasks/`. Work them roughly in order; a 
 ### 2026-07-15
 
 - Completed: TASK-013 core feature hardening. Added local-only debug events for the core analytics table, verified all core spec error messages and recovery actions in mapper tests, covered rendered fallback issue messages in Compose UI tests, recorded the Logcat/local-event approach in the core feature spec, and wrote the QA handoff. `JAVA_HOME=$HOME/.local/share/jdks/jdk-17.0.19+10 ./gradlew test ktlintCheck` passes; default Java 25 remains unsuitable for Gradle because it lacks the compiler capability.
-- Blocked: None.
-- Next: TASK-014 QA core feature is ready.
+- Completed: TASK-014 QA core feature. `JAVA_HOME=$HOME/.local/share/jdks/jdk-17.0.19+10 ./gradlew test ktlintCheck build`, `connectedAndroidTest` (9 tests on `SM-S731B - 16`), and `installDebug` pass. QA returned the core feature to `In Progress` because installed runtime testing found blockers: `Test Popup` logs detection but does not render a snapshot/popup, real AirPods BLE scanning is not wired, and system-overlay presentation is not implemented. Failures are filed in `project-docs/handoffs/qa-to-frontend-backend-TASK-014-core-feature-blockers.md`.
+- Blocked: Core feature cannot ship until the TASK-014 handoff blockers are fixed and re-verified.
+- Next: Frontend/Backend should address TASK-014 blockers before full regression.

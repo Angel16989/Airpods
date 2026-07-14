@@ -278,12 +278,16 @@ Implementation note (TASK-013): the core feature emits the analytics-table event
 
 ## Acceptance Criteria
 
-- [ ] User can enable monitoring after granting required permissions.
+- [x] User can enable monitoring after granting required permissions.
 - [ ] AirPods detection produces a local snapshot when supported Bluetooth/BLE data is available.
 - [ ] Popup shows device label, original visual, battery values, unknown states, and timestamp.
 - [ ] Overlay-denied fallback shows battery status inside the app and optionally through notification.
-- [ ] Duplicate popups are suppressed during the cooldown window.
-- [ ] Error and permission states are handled with clear recovery actions.
-- [ ] Tests are added or updated for parser, state mapping, cooldown, DataStore, and UI states.
-- [ ] Documentation is updated and downstream API/UI tasks can implement from this spec.
-- [ ] Feature is ready for TASK-006, TASK-011, and TASK-012 planning.
+- [x] Duplicate popups are suppressed during the cooldown window.
+- [x] Error and permission states are handled with clear recovery actions.
+- [x] Tests are added or updated for parser, state mapping, cooldown, DataStore, and UI states.
+- [x] Documentation is updated and downstream API/UI tasks can implement from this spec.
+- [x] Feature is ready for TASK-006, TASK-011, and TASK-012 planning.
+
+## QA Status
+
+TASK-014 QA on 2026-07-15 did not ship the feature. Automated tests pass, but installed runtime verification found blockers: the `Test Popup` action logs an `airpods_detected` event without rendering a snapshot/popup, real AirPods BLE detection is not wired into the app, and system-overlay presentation is not implemented beyond the in-activity popup component. See `project-docs/handoffs/qa-to-frontend-backend-TASK-014-core-feature-blockers.md`.
