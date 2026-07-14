@@ -41,9 +41,33 @@ device or running emulator.
 ./gradlew test connectedAndroidTest
 ```
 
+```bash
+./gradlew ktlintCheck
+```
+
+```bash
+./gradlew ktlintFormat
+```
+
 Verified 2026-07-12 (TASK-007): `./gradlew build` (includes `test` + `lint`) passes from a
 fresh clone. `installDebug`/`connectedAndroidTest` could not be exercised in the scaffold
 sandbox — no device/emulator was attached.
+
+Verified 2026-07-14 (TASK-008): `./gradlew build` (now also runs `ktlintCheck` as part of
+`check`) and `./gradlew test` pass from a clean checkout. `ktlintFormat` auto-fixes style
+violations; `ktlintCheck` cannot auto-fix Kotlin naming violations, so run it before relying
+on `build` alone. `installDebug`/`connectedAndroidTest` remain unverified — no device/emulator
+in this sandbox.
+
+## Testing Conventions
+
+- Test runner: JUnit 4, run via Gradle (`./gradlew test` for local/unit, `./gradlew connectedAndroidTest` for instrumented).
+- Unit tests (`app/src/test/`): plain JVM tests for logic with no Android framework or Compose dependency. Class names end in `...Test` (for example `PlaceholderUnitTest`).
+- Component/instrumented tests (`app/src/androidTest/`): `@RunWith(AndroidJUnit4::class)` tests using Compose UI Testing (`createAndroidComposeRule`) and Espresso; used for anything that touches a `ComponentActivity`, Compose UI tree, or Android framework APIs. These require a connected device or emulator to run.
+- Minimum bar per feature task: at least one unit test for logic and one component/instrumented test for the UI it renders, matching the pattern in `MainActivityTest.kt` / `PlaceholderUnitTest.kt`.
+- Keep example/scaffold tests deterministic and trivial — no network, no timing-dependent assertions, no flaky waits.
+- Linting/formatting: `org.jlleitschuh.gradle.ktlint` (Kotlin style) runs as part of `./gradlew check` / `./gradlew build`, alongside the Android Gradle Plugin's built-in `lint` task (Android-specific static analysis, already wired into `build`/`check`). Run `./gradlew ktlintFormat` to auto-fix style issues before pushing; only unfixable violations (for example, illegal identifier names) require a manual edit.
+- `@Composable` functions are named in `PascalCase` by convention (they render like components); this is whitelisted in `.editorconfig` via `ktlint_function_naming_ignore_when_annotated_with = Composable` so ktlint does not flag it as a naming violation.
 
 ## Data And API Conventions
 
