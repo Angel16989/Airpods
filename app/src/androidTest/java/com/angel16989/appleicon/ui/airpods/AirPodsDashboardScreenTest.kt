@@ -3,6 +3,7 @@ package com.angel16989.appleicon.ui.airpods
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -45,7 +46,7 @@ class AirPodsDashboardScreenTest {
             }
         }
 
-        composeRule.onNodeWithTag("apple_icon_loading_indicator").assertIsDisplayed()
+        composeRule.onAllNodesWithTag("apple_icon_loading_indicator").assertCountEquals(2)
     }
 
     @Test
