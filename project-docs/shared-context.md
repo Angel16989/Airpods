@@ -41,9 +41,39 @@ device or running emulator.
 ./gradlew test connectedAndroidTest
 ```
 
+```bash
+./gradlew ktlintCheck
+```
+
+```bash
+./gradlew ktlintFormat
+```
+
 Verified 2026-07-12 (TASK-007): `./gradlew build` (includes `test` + `lint`) passes from a
 fresh clone. `installDebug`/`connectedAndroidTest` could not be exercised in the scaffold
 sandbox — no device/emulator was attached.
+
+Verified 2026-07-14 (TASK-008): `./gradlew build` (now also runs `ktlintCheck` as part of
+`check`) and `./gradlew test` pass from a clean checkout. `ktlintFormat` auto-fixes style
+violations; `ktlintCheck` cannot auto-fix Kotlin naming violations, so run it before relying
+on `build` alone. `installDebug`/`connectedAndroidTest` remain unverified — no device/emulator
+in this sandbox.
+
+Verified 2026-07-14 (TASK-009/TASK-010): with JDK 17 available at
+`~/.local/share/jdks/jdk-17.0.19+10`, `./gradlew build` passes and the Android test sources
+compile via `./gradlew :app:compileDebugAndroidTestKotlin :app:compileDebugAndroidTestJavaWithJavac`.
+`connectedAndroidTest` remains unverified because no device/emulator is attached and the local
+SDK has no emulator/system image installed.
+
+## Testing Conventions
+
+- Test runner: JUnit 4, run via Gradle (`./gradlew test` for local/unit, `./gradlew connectedAndroidTest` for instrumented).
+- Unit tests (`app/src/test/`): plain JVM tests for logic with no Android framework or Compose dependency. Class names end in `...Test` (for example `PlaceholderUnitTest`).
+- Component/instrumented tests (`app/src/androidTest/`): `@RunWith(AndroidJUnit4::class)` tests using Compose UI Testing (`createAndroidComposeRule`) and Espresso; used for anything that touches a `ComponentActivity`, Compose UI tree, or Android framework APIs. These require a connected device or emulator to run.
+- Minimum bar per feature task: at least one unit test for logic and one component/instrumented test for the UI it renders, matching the pattern in `MainActivityTest.kt` / `PlaceholderUnitTest.kt`.
+- Keep example/scaffold tests deterministic and trivial — no network, no timing-dependent assertions, no flaky waits.
+- Linting/formatting: `org.jlleitschuh.gradle.ktlint` (Kotlin style) runs as part of `./gradlew check` / `./gradlew build`, alongside the Android Gradle Plugin's built-in `lint` task (Android-specific static analysis, already wired into `build`/`check`). Run `./gradlew ktlintFormat` to auto-fix style issues before pushing; only unfixable violations (for example, illegal identifier names) require a manual edit.
+- `@Composable` functions are named in `PascalCase` by convention (they render like components); this is whitelisted in `.editorconfig` via `ktlint_function_naming_ignore_when_annotated_with = Composable` so ktlint does not flag it as a naming violation.
 
 ## Data And API Conventions
 
@@ -77,6 +107,22 @@ sandbox — no device/emulator was attached.
 - Authentication and authorization: v0.1 has no accounts, passwords, sessions, API keys, bearer tokens, or cloud auth. Access is authorized only by the local Android user through runtime permissions, overlay permission, notification permission, Bluetooth availability, and in-app settings such as `monitoring_enabled`, `overlay_enabled`, and `notification_enabled`.
 - Persistence: DataStore stores only minimal local state required by the specs: settings, last detected display label, last known battery snapshot, popup cooldown metadata, and notification state. No remote sync is allowed for v0.1.
 - Diagnostics: no external analytics or network diagnostics are enabled in v0.1. Any debug events stay on-device unless a later decision explicitly adds opt-in diagnostics.
+
+## Design Conventions
+
+- Compose UI starts at `AppleIconApp`, which renders a responsive dashboard shell for mobile portrait and wider/tablet previews.
+- Shared design tokens live in `app/src/main/java/com/angel16989/appleicon/ui/theme/DesignTokens.kt`; add spacing, shape, and fixed sizing there before introducing one-off values in components.
+- Shared primitives live in `app/src/main/java/com/angel16989/appleicon/ui/components/`: `AppleIconButton`, `AppleIconTextField`, `AppleIconLoadingIndicator`, `AppleIconEmptyState`, and `AppleIconErrorState`.
+- Keep feature screens composed from the shared shell/primitives where practical. Add new primitives only when a later feature needs the repeated behavior or state.
+- Panel and control corner radii are capped at 8dp for the v0.1 Material 3 style. Use Material color roles from `AppleIconTheme` instead of hard-coded component colors.
+
+## Persistence Setup
+
+- DataStore Preferences is the v0.1 persistence layer; do not add a SQL database for TASK-010 or downstream MVP work unless a new Active decision replaces the DataStore stack choice.
+- Runtime DataStore access is exposed through `Context.appleIconDataStore`, with typed reads/writes handled by `AirPodsPreferencesRepository`.
+- The v0.1 preference schema is versioned with `schema_version = 1`. Initial setup is lazy through `AirPodsPreferencesRepository.ensureInitialized()`, so there is no command-line migrate-up/migrate-down step for the first release.
+- Rollback testing for v0.1 means clearing local preferences through `AirPodsPreferencesRepository.clearAll()` and reinitializing schema version 1. SQL-style reversible migrations are not applicable until a future schema migration exists.
+- Local/dev seed data is available through `AirPodsPreferencesRepository.seedLocalDevelopmentData()`, which creates a connected AirPods Pro sample snapshot and active notification state without network access.
 
 ## Agent Rules
 
