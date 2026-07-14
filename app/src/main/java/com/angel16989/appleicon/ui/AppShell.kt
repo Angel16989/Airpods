@@ -1,238 +1,274 @@
 package com.angel16989.appleicon.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import android.Manifest
+import android.bluetooth.BluetoothManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.angel16989.appleicon.ui.components.AppleIconButton
-import com.angel16989.appleicon.ui.components.AppleIconEmptyState
-import com.angel16989.appleicon.ui.components.AppleIconLoadingIndicator
-import com.angel16989.appleicon.ui.theme.AppleIconShape
-import com.angel16989.appleicon.ui.theme.AppleIconSpacing
-import com.angel16989.appleicon.ui.theme.AppleIconTheme
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import com.angel16989.appleicon.data.local.AirPodsPreferencesRepository
+import com.angel16989.appleicon.data.local.appleIconDataStore
+import com.angel16989.appleicon.data.model.AirPodsBluetoothPayload
+import com.angel16989.appleicon.data.model.AirPodsConnectionState
+import com.angel16989.appleicon.data.model.AirPodsLocalState
+import com.angel16989.appleicon.data.model.AirPodsModelHint
+import com.angel16989.appleicon.data.model.AirPodsMonitorRequest
+import com.angel16989.appleicon.data.model.AirPodsMonitorResult
+import com.angel16989.appleicon.data.model.AirPodsNotificationState
+import com.angel16989.appleicon.data.model.AirPodsScanReason
+import com.angel16989.appleicon.data.model.AirPodsSettings
+import com.angel16989.appleicon.data.model.AirPodsSnapshotSource
+import com.angel16989.appleicon.domain.airpods.AirPodsMonitor
+import com.angel16989.appleicon.domain.airpods.AirPodsSignalSource
+import com.angel16989.appleicon.ui.airpods.AirPodsDashboardActions
+import com.angel16989.appleicon.ui.airpods.AirPodsDashboardScreen
+import com.angel16989.appleicon.ui.airpods.AirPodsRuntimePermissionState
+import com.angel16989.appleicon.ui.airpods.mapAirPodsDashboardUiState
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
+import java.time.OffsetDateTime
 
 @Composable
 fun AppleIconApp(modifier: Modifier = Modifier) {
-    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
-        Surface(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-            color = MaterialTheme.colorScheme.background,
+    val context = LocalContext.current
+    val appContext = context.applicationContext
+    val repository =
+        remember(appContext) {
+            AirPodsPreferencesRepository(appContext.appleIconDataStore)
+        }
+    val manualSignals =
+        remember {
+            Channel<AirPodsBluetoothPayload>(capacity = Channel.BUFFERED)
+        }
+    val monitor =
+        remember(repository, manualSignals) {
+            AirPodsMonitor(
+                repository = repository,
+                signalSource = AirPodsSignalSource { manualSignals.receiveAsFlow() },
+            )
+        }
+    val scope = rememberCoroutineScope()
+    var permissionRefresh by remember { mutableIntStateOf(0) }
+    var scanRefresh by remember { mutableIntStateOf(0) }
+    var latestMonitorResult by remember { mutableStateOf<AirPodsMonitorResult?>(null) }
+    var popupResult by remember { mutableStateOf<AirPodsMonitorResult.Snapshot?>(null) }
+    var isScanning by remember { mutableStateOf(false) }
+
+    val bluetoothPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestMultiplePermissions(),
         ) {
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                val isWide = maxWidth >= 720.dp
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(horizontal = AppleIconSpacing.Screen)
-                            .padding(vertical = AppleIconSpacing.ExtraLarge),
-                    verticalArrangement = Arrangement.spacedBy(AppleIconSpacing.ExtraLarge),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Header(modifier = Modifier.widthIn(max = 960.dp))
-                    if (isWide) {
-                        Row(
-                            modifier = Modifier.widthIn(max = 960.dp),
-                            horizontalArrangement = Arrangement.spacedBy(AppleIconSpacing.Large),
-                        ) {
-                            DashboardPanel(
-                                title = "Status",
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                MonitoringSummary()
-                            }
-                            DashboardPanel(
-                                title = "Latest Snapshot",
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                LastSnapshotPlaceholder()
-                            }
-                        }
-                    } else {
-                        DashboardPanel(
-                            title = "Status",
-                            modifier = Modifier.widthIn(max = 560.dp),
-                        ) {
-                            MonitoringSummary()
-                        }
-                        DashboardPanel(
-                            title = "Latest Snapshot",
-                            modifier = Modifier.widthIn(max = 560.dp),
-                        ) {
-                            LastSnapshotPlaceholder()
-                        }
-                    }
-                    DashboardPanel(
-                        title = "Settings",
-                        modifier = Modifier.widthIn(max = 960.dp),
-                    ) {
-                        SettingsPlaceholder()
-                    }
+            permissionRefresh += 1
+            scanRefresh += 1
+        }
+    val notificationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+        ) {
+            permissionRefresh += 1
+            scanRefresh += 1
+        }
+    val settingsLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+        ) {
+            permissionRefresh += 1
+            scanRefresh += 1
+        }
+
+    val runtimePermissions =
+        remember(permissionRefresh) {
+            appContext.readAirPodsRuntimePermissions()
+        }
+    val localState by repository.localState.collectAsState(
+        initial =
+            AirPodsLocalState(
+                settings = AirPodsSettings(),
+                snapshot = null,
+                notificationState = AirPodsNotificationState(),
+            ),
+    )
+
+    LaunchedEffect(localState.settings, runtimePermissions, scanRefresh) {
+        if (!localState.settings.monitoringEnabled) {
+            isScanning = false
+            return@LaunchedEffect
+        }
+
+        latestMonitorResult = null
+        isScanning = true
+        monitor
+            .observeSnapshots(
+                request =
+                    AirPodsMonitorRequest(
+                        monitoringEnabled = localState.settings.monitoringEnabled,
+                        overlayEnabled = localState.settings.overlayEnabled,
+                        scanReason = AirPodsScanReason.APP_FOREGROUND,
+                    ),
+                permissions = runtimePermissions.toMonitorPermissions(),
+            ).collect { result ->
+                latestMonitorResult = result
+                isScanning = false
+                if (result is AirPodsMonitorResult.Snapshot && result.popupShouldShow) {
+                    popupResult = result
+                    repository.markPopupShown(
+                        deviceId = result.snapshot.deviceId,
+                        shownAt = OffsetDateTime.now().toString(),
+                    )
                 }
             }
+    }
+
+    val uiState =
+        mapAirPodsDashboardUiState(
+            localState = localState,
+            monitorResult = latestMonitorResult,
+            runtimePermissions = runtimePermissions,
+            isScanning = isScanning,
+            popupResult = popupResult,
+        )
+    val actions =
+        AirPodsDashboardActions(
+            onMonitoringChanged = { enabled ->
+                scope.launch {
+                    repository.saveSettings(
+                        localState.settings
+                            .copy(monitoringEnabled = enabled)
+                            .withRuntimePermissions(runtimePermissions),
+                    )
+                    scanRefresh += 1
+                }
+            },
+            onPopupChanged = { enabled ->
+                scope.launch {
+                    repository.saveSettings(
+                        localState.settings
+                            .copy(overlayEnabled = enabled)
+                            .withRuntimePermissions(runtimePermissions),
+                    )
+                    scanRefresh += 1
+                }
+            },
+            onNotificationChanged = { enabled ->
+                scope.launch {
+                    repository.saveSettings(
+                        localState.settings
+                            .copy(notificationEnabled = enabled)
+                            .withRuntimePermissions(runtimePermissions),
+                    )
+                }
+            },
+            onRequestBluetoothPermission = {
+                bluetoothPermissionLauncher.launch(appContext.requiredBluetoothPermissions())
+            },
+            onOpenBluetoothSettings = {
+                settingsLauncher.launch(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+            },
+            onOpenOverlaySettings = {
+                settingsLauncher.launch(appContext.overlaySettingsIntent())
+            },
+            onRequestNotificationPermission = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            },
+            onRetryScan = {
+                permissionRefresh += 1
+                scanRefresh += 1
+            },
+            onTestPopup = {
+                scope.launch {
+                    manualSignals.send(manualTestPayload())
+                    scanRefresh += 1
+                }
+            },
+            onDismissPopup = {
+                popupResult = null
+            },
+        )
+
+    AirPodsDashboardScreen(
+        state = uiState,
+        actions = actions,
+        modifier = modifier,
+    )
+}
+
+private fun Context.readAirPodsRuntimePermissions(): AirPodsRuntimePermissionState {
+    val bluetoothPermissionGranted =
+        requiredBluetoothPermissions().all { permission ->
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
         }
-    }
+    return AirPodsRuntimePermissionState(
+        bluetoothPermissionGranted = bluetoothPermissionGranted,
+        bluetoothAvailable = bluetoothPermissionGranted && isBluetoothEnabled(),
+        overlayPermissionGranted = Settings.canDrawOverlays(this),
+        notificationPermissionGranted = isNotificationPermissionGranted(),
+        notificationPermissionRequired = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
+    )
 }
 
-@Composable
-private fun Header(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(AppleIconSpacing.Small),
-    ) {
-        Text(
-            text = "Apple Icon",
-            color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold,
+private fun Context.requiredBluetoothPermissions(): Array<String> =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        arrayOf(
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH_CONNECT,
         )
-        Text(
-            text = "AirPods status",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.titleMedium,
-        )
+    } else {
+        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
     }
-}
 
-@Composable
-private fun DashboardPanel(
-    title: String,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(AppleIconShape.PanelRadius),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp,
-        shadowElevation = 1.dp,
-    ) {
-        Column(
-            modifier = Modifier.padding(AppleIconSpacing.Large),
-            verticalArrangement = Arrangement.spacedBy(AppleIconSpacing.Large),
-        ) {
-            Text(
-                text = title,
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            content()
-        }
-    }
-}
+private fun Context.isBluetoothEnabled(): Boolean =
+    runCatching {
+        val manager = getSystemService(BluetoothManager::class.java)
+        manager?.adapter?.isEnabled == true
+    }.getOrDefault(false)
 
-@Composable
-private fun MonitoringSummary() {
-    Column(verticalArrangement = Arrangement.spacedBy(AppleIconSpacing.Medium)) {
-        StatusRow(label = "Monitoring", value = "Ready")
-        StatusRow(label = "Bluetooth", value = "Pending")
-        StatusRow(label = "Overlay", value = "Pending")
-        StatusRow(label = "Notifications", value = "Pending")
-        HorizontalDivider()
-        AppleIconLoadingIndicator(label = "Idle")
-    }
-}
+private fun Context.isNotificationPermissionGranted(): Boolean =
+    Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+        ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
 
-@Composable
-private fun LastSnapshotPlaceholder() {
-    Column(verticalArrangement = Arrangement.spacedBy(AppleIconSpacing.Large)) {
-        AppleIconEmptyState(
-            title = "No AirPods detected yet",
-            message = "Last battery status will appear here.",
-        )
-        AppleIconButton(
-            label = "Test Popup",
-            onClick = {},
-            enabled = false,
-        )
-    }
-}
+private fun Context.overlaySettingsIntent(): Intent =
+    Intent(
+        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+        Uri.parse("package:$packageName"),
+    )
 
-@Composable
-private fun SettingsPlaceholder() {
-    Column(verticalArrangement = Arrangement.spacedBy(AppleIconSpacing.Medium)) {
-        ToggleRow(label = "Monitoring", checked = false)
-        ToggleRow(label = "Popup", checked = false)
-        ToggleRow(label = "Persistent notification", checked = false)
-    }
-}
+private fun AirPodsSettings.withRuntimePermissions(runtimePermissions: AirPodsRuntimePermissionState): AirPodsSettings =
+    copy(notificationPermissionGranted = runtimePermissions.notificationPermissionGranted)
 
-@Composable
-private fun StatusRow(
-    label: String,
-    value: String,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
-        Text(
-            text = value,
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.labelLarge,
-            textAlign = TextAlign.End,
-        )
-    }
-}
-
-@Composable
-private fun ToggleRow(
-    label: String,
-    checked: Boolean,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
-        Switch(
-            checked = checked,
-            onCheckedChange = null,
-            enabled = false,
-        )
-    }
-}
-
-@Preview(showBackground = true, widthDp = 390, heightDp = 780)
-@Composable
-private fun AppleIconAppMobilePreview() {
-    AppleIconTheme {
-        AppleIconApp()
-    }
-}
-
-@Preview(showBackground = true, widthDp = 900, heightDp = 700)
-@Composable
-private fun AppleIconAppWidePreview() {
-    AppleIconTheme {
-        AppleIconApp()
-    }
-}
+private fun manualTestPayload(): AirPodsBluetoothPayload =
+    AirPodsBluetoothPayload(
+        bluetoothIdentity = "manual-test-airpods-pro",
+        displayName = "AirPods Pro",
+        modelHint = AirPodsModelHint.AIRPODS_PRO,
+        connectionState = AirPodsConnectionState.CONNECTED,
+        leftBatteryPercent = 82,
+        rightBatteryPercent = 79,
+        caseBatteryPercent = 64,
+        leftCharging = false,
+        rightCharging = false,
+        caseCharging = true,
+        source = AirPodsSnapshotSource.MANUAL_TEST,
+        observedAt = OffsetDateTime.now().toString(),
+    )

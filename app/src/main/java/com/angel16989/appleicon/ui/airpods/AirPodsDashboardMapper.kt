@@ -83,7 +83,11 @@ fun mapAirPodsDashboardUiState(
             popupResult?.let { result ->
                 AirPodsPopupUi(
                     snapshot = result.snapshot.toSnapshotUi(),
-                    fallbackMessage = result.fallbackErrors.firstOrNull()?.error?.message,
+                    fallbackMessage =
+                        result.fallbackErrors
+                            .firstOrNull()
+                            ?.error
+                            ?.message,
                 )
             },
     )
