@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Start the full AFK automation stack for Apple Icon:
 #   1. dashboard server  -> http://127.0.0.1:8721/dashboard/
-#   2. auto commit+push watcher
+#   2. auto commit+push watcher (default every 5s)
 #   3. task dispatcher (foreground, so you see progress)
 #
 # Usage:
@@ -71,8 +71,9 @@ else
 fi
 
 if ! pgrep -f "auto_git_push.py" >/dev/null; then
-  nohup python3 scripts/auto_git_push.py --interval 60 >> dispatch-logs/watcher.log 2>&1 &
-  echo "[start] auto-push watcher (log: dispatch-logs/watcher.log)"
+  : "${AUTO_PUSH_INTERVAL:=5}"
+  nohup python3 -u scripts/auto_git_push.py --interval "$AUTO_PUSH_INTERVAL" >> dispatch-logs/watcher.log 2>&1 &
+  echo "[start] auto-push watcher every ${AUTO_PUSH_INTERVAL}s (log: dispatch-logs/watcher.log)"
 else
   echo "[ok] auto-push watcher already running"
 fi

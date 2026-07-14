@@ -4,8 +4,8 @@
 Watches the repo for changes and automatically commits and pushes them.
 
 Usage:
-    python3 scripts/auto_git_push.py                # watch, check every 30s
-    python3 scripts/auto_git_push.py --interval 60  # check every 60s
+    python3 scripts/auto_git_push.py                # watch, check every 5s
+    python3 scripts/auto_git_push.py --interval 30  # check every 30s
     python3 scripts/auto_git_push.py --once         # single check, then exit
     python3 scripts/auto_git_push.py --no-push      # commit locally only
 
@@ -24,12 +24,14 @@ Behavior:
 
 import argparse
 import datetime
+import functools
 import subprocess
 import sys
 import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+print = functools.partial(print, flush=True)
 
 
 def git(*args, check=True):
@@ -138,8 +140,8 @@ def watch(interval, push=True):
 
 def main():
     parser = argparse.ArgumentParser(description="Auto git commit + push watcher.")
-    parser.add_argument("--interval", type=int, default=30,
-                        help="seconds between checks (default 30)")
+    parser.add_argument("--interval", type=int, default=5,
+                        help="seconds between checks (default 5)")
     parser.add_argument("--once", action="store_true",
                         help="check once, commit+push if dirty, then exit")
     parser.add_argument("--no-push", action="store_true",

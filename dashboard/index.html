@@ -218,10 +218,12 @@ function badge(status, active = false) {
 function renderTiles(data) {
   const workers = data.processes.filter((p) => p.role.includes("worker")).length;
   const gradle = data.processes.filter((p) => p.role === "gradle").length;
+  const autoPush = data.processes.some((p) => p.role === "auto push watcher");
   const next = data.board.next[0];
   $("tiles").innerHTML = [
     tile("Branch", data.branch, data.head, "blue"),
     tile("Dirty files", data.dirtyCount, data.dirtyCount ? "work in progress" : "clean", data.dirtyCount ? "warn" : "good"),
+    tile("Auto push", autoPush ? "On" : "Off", autoPush ? "watching local repo" : "watcher not running", autoPush ? "good" : "warn"),
     tile("Workers", workers, gradle ? `${gradle} Gradle job(s)` : "no Gradle job", workers ? "blue" : "warn"),
     tile("Active task", data.workerTasks.join(", ") || "None", "detected from processes", data.workerTasks.length ? "violet" : "warn"),
     tile("Next up", next ? next["Task ID"] : "None", next ? next.Feature : "no eligible task", "blue"),
