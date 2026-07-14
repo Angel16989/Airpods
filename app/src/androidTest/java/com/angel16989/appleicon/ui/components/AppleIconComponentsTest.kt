@@ -2,7 +2,7 @@ package com.angel16989.appleicon.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import com.angel16989.appleicon.ui.theme.AppleIconTheme
@@ -24,7 +24,6 @@ class AppleIconComponentsTest {
                 )
             }
         }
-        composeRule.waitForIdle()
 
         composeRule.onNodeWithText("Continue").assertIsDisplayed()
         composeRule.onNodeWithTag("apple_icon_button_loading").assertIsDisplayed()
@@ -42,7 +41,6 @@ class AppleIconComponentsTest {
                 )
             }
         }
-        composeRule.waitForIdle()
 
         composeRule.onNodeWithText("Device label").assertIsDisplayed()
         composeRule.onNodeWithText("Optional").assertIsDisplayed()
@@ -64,7 +62,6 @@ class AppleIconComponentsTest {
                 }
             }
         }
-        composeRule.waitForIdle()
 
         composeRule.onNodeWithTag("apple_icon_empty_state").assertIsDisplayed()
         composeRule.onNodeWithText("Bluetooth off").assertIsDisplayed()

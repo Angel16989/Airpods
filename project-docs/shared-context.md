@@ -60,8 +60,10 @@ on `build` alone. `installDebug`/`connectedAndroidTest` remain unverified — no
 in this sandbox.
 
 Verified 2026-07-14 (TASK-009/TASK-010): with JDK 17 available at
-`~/.local/share/jdks/jdk-17.0.19+10`, `./gradlew build` passes.
-`./gradlew connectedAndroidTest` passes on a physical Samsung SM-S731B connected over USB.
+`~/.local/share/jdks/jdk-17.0.19+10`, `./gradlew build` passes and the Android test sources
+compile via `./gradlew :app:compileDebugAndroidTestKotlin :app:compileDebugAndroidTestJavaWithJavac`.
+`connectedAndroidTest` remains unverified because no device/emulator is attached and the local
+SDK has no emulator/system image installed.
 
 ## Testing Conventions
 
@@ -70,7 +72,6 @@ Verified 2026-07-14 (TASK-009/TASK-010): with JDK 17 available at
 - Component/instrumented tests (`app/src/androidTest/`): `@RunWith(AndroidJUnit4::class)` tests using Compose UI Testing (`createAndroidComposeRule`) and Espresso; used for anything that touches a `ComponentActivity`, Compose UI tree, or Android framework APIs. These require a connected device or emulator to run.
 - Minimum bar per feature task: at least one unit test for logic and one component/instrumented test for the UI it renders, matching the pattern in `MainActivityTest.kt` / `PlaceholderUnitTest.kt`.
 - Keep example/scaffold tests deterministic and trivial — no network, no timing-dependent assertions, no flaky waits.
-- Compose UI tests currently use the stable `androidx.compose.ui.test.junit4` rules. The v2 rules were tried during TASK-009 physical-device verification but produced intermittent "No compose hierarchies found" failures on the SM-S731B; keep v1 until a later Compose test migration can be done deliberately.
 - Linting/formatting: `org.jlleitschuh.gradle.ktlint` (Kotlin style) runs as part of `./gradlew check` / `./gradlew build`, alongside the Android Gradle Plugin's built-in `lint` task (Android-specific static analysis, already wired into `build`/`check`). Run `./gradlew ktlintFormat` to auto-fix style issues before pushing; only unfixable violations (for example, illegal identifier names) require a manual edit.
 - `@Composable` functions are named in `PascalCase` by convention (they render like components); this is whitelisted in `.editorconfig` via `ktlint_function_naming_ignore_when_annotated_with = Composable` so ktlint does not flag it as a naming violation.
 

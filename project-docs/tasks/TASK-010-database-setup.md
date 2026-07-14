@@ -80,5 +80,5 @@ Run migrate up, migrate down, migrate up, seed — in that order, from clean.
   - 2026-07-14: Added JVM repository tests covering settings/snapshot persistence, seed data, reset behavior, and battery percentage validation.
   - 2026-07-14: Documented the DataStore setup, schema version, seed helper, and no-SQL-migration behavior in `shared-context.md`.
   - 2026-07-14: Verification so far: `./gradlew ktlintCheck` passes and `./gradlew :app:compileDebugKotlin` passes. Full `./gradlew test` is blocked in this environment because the installed Java runtime has no `javac`.
-  - 2026-07-14: Provisioned a local Temurin JDK 17 at `~/.local/share/jdks/jdk-17.0.19+10`; `./gradlew build` passes and `./gradlew connectedAndroidTest` passes on a physical Samsung SM-S731B connected over USB.
+  - 2026-07-14: Provisioned a local Temurin JDK 17 at `~/.local/share/jdks/jdk-17.0.19+10`; `./gradlew build` passes and Android test sources compile. `connectedAndroidTest` was not run because no device/emulator is attached.
 - Final status: Complete. Implemented and committed on `feature/TASK-009-010-foundation`.
